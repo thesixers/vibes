@@ -1,0 +1,87 @@
+{
+  "name": "vibes-desktop",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A beautiful cross-platform music player with liquid glass UI",
+  "homepage": "https://github.com/vibes/vibes-desktop",
+  "main": "main.js",
+  "author": {
+    "name": "Vibes Team",
+    "email": "team@vibes.app"
+  },
+  "license": "MIT",
+
+  "scripts": {
+    "dev": "concurrently \"vite\" \"electron .\"",
+    "build": "vite build",
+
+    "build:linux": "npm run build && electron-builder --linux",
+    "build:win": "npm run build && electron-builder --win",
+    "build:mac": "npm run build && electron-builder --mac",
+
+    "build:all": "npm run build && electron-builder -mwl"
+  },
+
+  "keywords": [
+    "electron",
+    "music",
+    "player",
+    "desktop"
+  ],
+
+  "dependencies": {
+    "lucide-react": "^0.294.0",
+    "music-metadata": "^11.10.3",
+    "pg": "^8.16.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^7.11.0",
+    "spotify-web-api-node": "^5.0.2"
+  },
+
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.16",
+    "concurrently": "^8.2.2",
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.3.6",
+    "vite": "^5.0.8"
+  },
+
+  "build": {
+    "appId": "com.vibes.desktop",
+    "productName": "Vibes",
+
+    "publish": ["github"],
+
+    "directories": {
+      "output": "dist"
+    },
+
+    "files": [
+      "dist-vite/**/*",
+      "main.js",
+      "preload.js"
+    ],
+
+    "linux": {
+      "target": ["AppImage"],
+      "category": "Audio",
+      "icon": "build/icons",
+      "maintainer": "team@vibes.app"
+    },
+
+    "win": {
+      "target": "nsis",
+      "icon": "build/icons/icon.ico"
+    },
+
+    "mac": {
+      "target": "dmg",
+      "icon": "build/icons/icon.icns",
+      "category": "public.app-category.music"
+    }
+  }
+}
