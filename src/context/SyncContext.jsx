@@ -17,7 +17,7 @@ export const SyncProvider = ({ children }) => {
       if (fps.includes(track.path)) continue;
 
       try {
-        let res = await fetch(`http://127.0.0.1:3000/api/track?title=${track.query}`);
+        let res = await fetch(`https://vibes-spotify.onrender.com/api/track?title=${track.query}`);
 
         const trackData = await res.json();
 
