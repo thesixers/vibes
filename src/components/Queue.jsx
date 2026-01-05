@@ -2,6 +2,7 @@ import React from 'react';
 import { usePlayer } from '../context/PlayerContext';
 import { Play, Pause, X } from 'lucide-react';
 import { mockAlbums } from '../data/mockData';
+import { formatDuration } from '../data/utils';
 
 const Queue = ({ isOpen, onClose }) => {
   const { queue, currentTrack, playPlaylist, isPlaying, togglePlay } = usePlayer();
@@ -31,7 +32,6 @@ const Queue = ({ isOpen, onClose }) => {
           <div className="space-y-1">
             {queue.map((track, index) => {
               const isCurrent = currentTrack?.id === track.id;
-              const album = mockAlbums.find(a => a.id === track.album_id);
 
               return (
                 <div
@@ -43,7 +43,7 @@ const Queue = ({ isOpen, onClose }) => {
                 >
                   <div className="relative w-10 h-10 rounded overflow-hidden flex-shrink-0">
                     <img 
-                      src={album?.cover_image_path} 
+                      src={track.images[0].url} 
                       alt={track.title} 
                       className="w-full h-full object-cover"
                     />
@@ -67,12 +67,12 @@ const Queue = ({ isOpen, onClose }) => {
                       {track.title}
                     </h4>
                     <p className="text-xs text-white/50 truncate">
-                      {track.artists.join(', ')}
+                      { currentTrack && track?.artists.map((artist) => artist.name).join(', ')}
                     </p>
                   </div>
 
                   <div className="text-xs text-white/40">
-                    {Math.floor(track.duration / 60)}:{String(track.duration % 60).padStart(2, '0')}
+                    { formatDuration(track.duration) }
                   </div>
                 </div>
               );

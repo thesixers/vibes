@@ -1,6 +1,6 @@
-import React from 'react';
-import { Minus, Square, X } from 'lucide-react';
-import icon from '../assets/icon.png';
+import React, { useEffect } from "react";
+import { CloudCog, Minus, Square, X } from "lucide-react";
+import icon from "../assets/icon.png";
 
 const TitleBar = () => {
   console.log("TitleBar rendering, window.vibesApp:", !!window.vibesApp);
@@ -17,9 +17,7 @@ const TitleBar = () => {
   const handleMaximize = async () => {
     console.log("Maximize clicked");
     if (window.vibesApp) {
-      // window.vibesApp.maximizeWindow();
-      const file = await window.vibesApp.loadMusicLibrary()
-      console.log(file)
+      window.vibesApp.maximizeWindow();
     } else {
       console.error("vibesApp not found on window");
     }
@@ -36,10 +34,13 @@ const TitleBar = () => {
 
   return (
     <div className="drag-region h-12 flex items-center justify-between px-4 glass border-b border-white/5">
-
       {/* Logo */}
       <div className="flex items-center gap-2">
-        <img src={icon} alt="Vibes Logo" className="w-8 h-8 rounded-lg shadow-glow-purple" />
+        <img
+          src={icon}
+          alt="Vibes Logo"
+          className="w-8 h-8 rounded-lg shadow-glow-purple"
+        />
         <span className="text-xl font-bold bg-gradient-to-r from-purple-electric to-purple-glow bg-clip-text text-transparent">
           Vibes
         </span>

@@ -10,26 +10,23 @@
     "email": "team@vibes.app"
   },
   "license": "MIT",
-
   "scripts": {
     "dev": "concurrently \"vite\" \"electron .\"",
     "build": "vite build",
-
     "build:linux": "npm run build && electron-builder --linux",
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "npm run build && electron-builder --mac",
-
     "build:all": "npm run build && electron-builder -mwl"
   },
-
   "keywords": [
     "electron",
     "music",
     "player",
     "desktop"
   ],
-
   "dependencies": {
+    "dexie": "^4.2.1",
+    "dexie-react-hooks": "^4.2.0",
     "lucide-react": "^0.294.0",
     "music-metadata": "^11.10.3",
     "pg": "^8.16.3",
@@ -38,7 +35,6 @@
     "react-router-dom": "^7.11.0",
     "spotify-web-api-node": "^5.0.2"
   },
-
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.16",
@@ -49,35 +45,32 @@
     "tailwindcss": "^3.3.6",
     "vite": "^5.0.8"
   },
-
   "build": {
     "appId": "com.vibes.desktop",
     "productName": "Vibes",
-
-    "publish": ["github"],
-
+    "publish": [
+      "github"
+    ],
     "directories": {
       "output": "dist"
     },
-
     "files": [
-      "dist-vite/**/*",
+      "dist/**/*",
       "main.js",
       "preload.js"
     ],
-
     "linux": {
-      "target": ["AppImage"],
+      "target": [
+        "AppImage"
+      ],
       "category": "Audio",
       "icon": "build/icons",
       "maintainer": "team@vibes.app"
     },
-
     "win": {
       "target": "nsis",
       "icon": "build/icons/icon.ico"
     },
-
     "mac": {
       "target": "dmg",
       "icon": "build/icons/icon.icns",
