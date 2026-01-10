@@ -20,7 +20,7 @@ const SearchPage = () => {
     // 1. Run parallel queries
     const [artists, albums, playlists, rawSongs] = await Promise.all([
       db.artists.filter(a => a.name.toLowerCase().includes(q)).limit(4).toArray(),
-      db.albums.filter(a => a.title.toLowerCase().includes(q)).limit(4).toArray(),
+      db.albums.where("type").anyOf("album").filter(a => a.title.toLowerCase().includes(q)).limit(4).toArray(),
       db.playlists.filter(p => p.title.toLowerCase().includes(q)).limit(4).toArray(),
       db.songs.filter(s => s.title.toLowerCase().includes(q)).limit(5).toArray(),
     ]);
@@ -83,11 +83,14 @@ const SearchPage = () => {
                 <div className="flex flex-col">
                   {results.songs.map((song) => {
                      const img = song.images?.[2]?.url || song.album?.images?.[2]?.url || song.album?.images?.[0]?.url || '/default-track.png';
-                     
-                     return (
+                    
+                    return (
                       <div
-                        key={song.id}
-                        onClick={() => playTrack(song)}
+                      key={song.id}
+                      onClick={async () => {
+                          const artists = await db.artists.bulkGet(song.artist_ids)
+                          playTrack({...song, artists})
+                        }}
                         className="group flex items-center gap-4 p-2 pr-4 rounded hover:bg-white/10 transition-colors cursor-pointer"
                       >
                         <div className="w-10 h-10 rounded overflow-hidden bg-white/5 relative flex-shrink-0">
@@ -121,7 +124,7 @@ const SearchPage = () => {
                     <div 
                       key={artist.id}
                       onClick={() => navigate(`/artist/${artist.id}`)}
-                      className="group flex flex-col items-center gap-3 cursor-pointer p-4 rounded-xl hover:bg-[#181818] transition-all"
+                      className="group flex flex-col items-center gap-3 cursor-pointer p-4 rounded-xl transition-all"
                     >
                       <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden shadow-lg bg-neutral-800">
                         {artist.images?.[0]?.url ? (

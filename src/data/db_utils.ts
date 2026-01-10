@@ -22,6 +22,7 @@ export async function addFullSong(track: any) {
           release_date: track.album.release_date,
           total_tracks: track.album.total_tracks,
           images: track.album.images,
+          type: track.album.type,
         });
       }
 

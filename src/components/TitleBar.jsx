@@ -36,12 +36,12 @@ const TitleBar = () => {
     <div className="drag-region h-12 flex items-center justify-between px-4 glass border-b border-white/5">
       {/* Logo */}
       <div className="flex items-center gap-2">
-        <img
+        {/* <img
           src={icon}
           alt="Vibes Logo"
           className="w-8 h-8 rounded-lg shadow-glow-purple"
-        />
-        <span className="text-xl font-bold bg-gradient-to-r from-purple-electric to-purple-glow bg-clip-text text-transparent">
+        /> */}
+        <span className="text-[35px] font-bold font-vibes bg-gradient-to-r bg-clip-text">
           Vibes
         </span>
       </div>

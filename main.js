@@ -32,7 +32,7 @@ function createWindow() {
     mainWindow.loadURL("http://localhost:5173");
     mainWindow.webContents.openDevTools();
   } else {
-    mainWindow.loadFile(path.join(__dirname, "dist-vite/index.html"));
+    mainWindow.loadFile(path.join(__dirname, "dist/index.html"));
   }
 }
 
@@ -68,10 +68,11 @@ ipcMain.handle("load-music-library", async () => {
       artist:
         common.album && common.album.toLowerCase() === "trendybeatz.com"
           ? common.composer.join(" ")
-          : cleanArtist(common.artist),
+          : cleanTitle({title: common.artist}),
       title: cleanTitle(common, file),
       album: common.album,
       path: `file://${filePath}`,
+      filename: cleanTitle("", file),
       duration: common.duration,
     };
 
@@ -81,6 +82,7 @@ ipcMain.handle("load-music-library", async () => {
       .replace(/\:/g, "");
 
     tracks.push(track);
+    // console.log(track);
     // console.log("================================== " + files.indexOf(file));
   }
 
@@ -102,11 +104,21 @@ const junks = [
   "9jaflaver.com",
   "x",
   "&",
+  "tooxclusive.com",
+  "krizbeatz",
 ];
 
 // Register the custom protocol
 protocol.registerSchemesAsPrivileged([
-  { scheme: 'media', privileges: { secure: true, standard: true, supportFetchAPI: true, stream: true } }
+  {
+    scheme: "media",
+    privileges: {
+      secure: true,
+      standard: true,
+      supportFetchAPI: true,
+      stream: true,
+    },
+  },
 ]);
 
 app.whenReady().then(() => {
@@ -126,6 +138,7 @@ app.whenReady().then(() => {
       protocol.handle("media", (request) => {
         // Convert "media://path/to/song.mp3" -> "file:///path/to/song.mp3"
         const url = request.url.replace("media://", "");
+        
         // Decode URI (fixes spaces like "Feeling%20The%20Nigga")
         return net.fetch("file://" + decodeURIComponent(url));
       });
@@ -141,6 +154,8 @@ app.on("window-all-closed", () => {
 });
 
 function cleanTitle(common, file) {
+  if(!common.title && !file) return "";
+
   const title = common.title
     ? common.title.replaceAll("(", "").replaceAll(")", "").split("|")[0]
     : file
@@ -148,31 +163,29 @@ function cleanTitle(common, file) {
         .join(" ")
         .split("-")
         .join(" ")
+        .replaceAll("(", "")
+        .replaceAll(")", "")
+        .replaceAll("%20", " ")
         .replace(`${path.extname(file)}`, "");
 
-  let cTitle = "";
-  for (const a of title.split(" ")) {
-    if (!junks.includes(a.toLowerCase())) {
-      cTitle += a + " ";
-    } else {
-      cTitle += "";
-    }
-  }
+  const extPattern = /\..+$/;
 
-  return cTitle.trim();
-}
+  const cTitle = title.split(" ").filter((word, i) => {
+    const titleLen = title.split(" ").length - 1;
+    if (!word) return false;
 
-function cleanArtist(artist) {
-  if (!artist) return "";
+    if (junks.includes(word.toLowerCase())) return false;
 
-  let cArtist = "";
-  for (const a of artist.split(" ")) {
-    if (!junks.includes(a.toLowerCase())) {
-      cArtist += a + " ";
-    } else {
-      cArtist += "";
-    }
-  }
+    if (i === titleLen && extPattern.test(word)) return false;
 
-  return cArtist.trim();
+    if (i === titleLen && word.startsWith("@")) return false;
+
+    if (i === titleLen && !isNaN(word)) return false;
+
+    if (word.startsWith("%")) return false;
+
+    return true;
+  });
+
+  return cTitle.join(" ").trim();
 }

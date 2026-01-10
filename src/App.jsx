@@ -13,6 +13,7 @@ import { PlayerProvider } from './context/PlayerContext';
 import AccountPage from './pages/AccountPage';
 import SyncUI from './components/SyncUI';
 import ArtistPage from './pages/ArtistPage';
+import PlaylistForm from './components/PlaylistForm';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
           <div className="flex-1 flex overflow-hidden">
             {/* sync ui */}
             <SyncUI />
+            <PlaylistForm />
             {/* Sidebar */}
             <Sidebar />
 

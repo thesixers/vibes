@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useRef,
+  useEffect,
+} from "react";
 
 const PlayerContext = createContext();
 
@@ -28,12 +34,12 @@ export const PlayerProvider = ({ children }) => {
       nextTrack();
     };
 
-    audio.addEventListener('timeupdate', updateProgress);
-    audio.addEventListener('ended', handleEnded);
+    audio.addEventListener("timeupdate", updateProgress);
+    audio.addEventListener("ended", handleEnded);
 
     return () => {
-      audio.removeEventListener('timeupdate', updateProgress);
-      audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener("timeupdate", updateProgress);
+      audio.removeEventListener("ended", handleEnded);
     };
   }, [isShuffling, isRepeating, currentIndex, queue]);
 
@@ -100,6 +106,7 @@ export const PlayerProvider = ({ children }) => {
       }
     }
 
+    console.log(nextIndex);
     setCurrentIndex(nextIndex);
     loadAndPlay(queue[nextIndex]);
   };
@@ -128,8 +135,29 @@ export const PlayerProvider = ({ children }) => {
   };
 
   const toggleShuffle = () => setIsShuffling(!isShuffling);
-  
+
   const toggleRepeat = () => setIsRepeating(!isRepeating);
+
+  // devices key board controls
+  useEffect(() => {
+    if (!("mediaSession" in navigator)) return;
+
+    navigator.mediaSession.setActionHandler("previoustrack", () => {
+      prevTrack();
+    });
+
+    navigator.mediaSession.setActionHandler("nexttrack", () => {
+      nextTrack();
+    });
+
+    navigator.mediaSession.setActionHandler("play", () => {
+      if (!isPlaying) togglePlay();
+    });
+
+    navigator.mediaSession.setActionHandler("pause", () => {
+      if (isPlaying) togglePlay();
+    });
+  }, [nextTrack, prevTrack, isPlaying, togglePlay]);
 
   return (
     <PlayerContext.Provider
@@ -149,7 +177,7 @@ export const PlayerProvider = ({ children }) => {
         nextTrack,
         prevTrack,
         toggleShuffle,
-        toggleRepeat
+        toggleRepeat,
       }}
     >
       {children}

@@ -7,7 +7,7 @@ import { db } from '../data/db';
 
 const MainContent = () => {
   const navigate = useNavigate();
-  const { playPlaylist } = usePlayer();
+  const { playPlaylist, currentTrack, togglePlay } = usePlayer();
   const [currentSlide, setCurrentSlide] = useState(0);
 
   // --- FETCH DATA ---
@@ -84,7 +84,7 @@ const MainContent = () => {
               <span className="inline-block px-3 py-1 mb-4 text-xs font-bold tracking-widest text-white uppercase bg-white/10 backdrop-blur-md rounded-full w-fit border border-white/10">
                 Featured Artist
               </span>
-              <h1 className="text-5xl md:text-7xl font-bold mb-4 text-white tight-leading drop-shadow-lg">
+              <h1 className="text-5xl md:text-7xl font-vibes font-bold mb-4 text-white tight-leading drop-shadow-lg">
                 {currentArtist.name}
               </h1>
               
@@ -136,7 +136,7 @@ const MainContent = () => {
         {/* --- SECTION 1: VIBE CURATION (PLAYLISTS) --- */}
         <div>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-white">Your Vibes</h2>
+            <h2 className="text-2xl font-bold text-white font-vibes">Your Vibes</h2>
             <button 
               onClick={() => navigate('/library')}
               className="text-sm text-purple-electric hover:text-white transition-colors font-medium flex items-center gap-1"
@@ -177,7 +177,7 @@ const MainContent = () => {
                   </div>
                   <div>
                     <h3 className="font-bold text-white truncate">{item.title}</h3>
-                    <p className="text-sm text-white/50">{item.songs?.length || 0} tracks</p>
+                    <p className="text-sm text-white/50">{item.song_ids?.length || 0} tracks</p>
                   </div>
                 </div>
               ))}
@@ -190,7 +190,7 @@ const MainContent = () => {
         {/* --- SECTION 2: NEW WAVES (RECENT SONGS) --- */}
         <div>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-white">New Waves</h2>
+            <h2 className="text-2xl font-bold text-white font-vibes">New Waves</h2>
           </div>
 
           {recentSongs.length > 0 ? (
@@ -198,7 +198,15 @@ const MainContent = () => {
               {recentSongs.map((item, index) => (
                 <div
                   key={item.id}
-                  onClick={() => playPlaylist(recentSongs, index)}
+                  onClick={() => {
+                    if (
+                      currentTrack &&
+                      currentTrack.id === item.id
+                    )
+                      return togglePlay();
+
+                      playPlaylist(recentSongs, index);
+                  }}
                   className="group bg-white/5 hover:bg-white/10 p-3 rounded-xl border border-white/5 hover:border-white/20 transition-all cursor-pointer"
                 >
                   <div className="aspect-square rounded-lg mb-3 relative overflow-hidden shadow-md">
@@ -238,6 +246,9 @@ const MainContent = () => {
             </div>
           )}
         </div>
+
+        
+        <div className='h-[100px]'/>
       </div>
     </div>
   );

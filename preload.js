@@ -1,6 +1,6 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
-console.log("Preload script loading...");
+// console.log("Preload script loading...");
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
@@ -11,4 +11,4 @@ contextBridge.exposeInMainWorld("vibesApp", {
   loadMusicLibrary: () => ipcRenderer.invoke('load-music-library')
 });
 
-console.log("vibesApp exposed to main world");
+// console.log("vibesApp exposed to main world");

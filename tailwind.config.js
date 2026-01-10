@@ -35,6 +35,9 @@ export default {
           "100%": { boxShadow: "0 0 40px rgba(138, 43, 226, 0.6)" },
         },
       },
+      fontFamily: {
+        vibes: ["Lobster", "sans-serif"],
+      }
     },
   },
   plugins: [],

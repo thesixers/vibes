@@ -45,6 +45,7 @@ export interface Album {
     total_tracks: number;
     release_date: string;
     images: Image[];
+    type: string;
 }
 
 class VibeDB extends Dexie {
@@ -57,7 +58,7 @@ class VibeDB extends Dexie {
         super("vibesDB");
         this.version(1).stores({
             artists: "id, name, genres", 
-            albums: "id, title, total_tracks, release_date", 
+            albums: "id, title, total_tracks, release_date, type", 
             songs: "id, title, file_path, duration, release_date, track_number, *artist_ids, is_spotify, popularity, album_id", 
             playlists: "++id, title, description, cover_image, *songs, created_at, updated_at",
         }); 
