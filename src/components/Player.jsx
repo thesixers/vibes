@@ -57,7 +57,10 @@ const Player = () => {
 
   return (
     <>
-      <AddtoPlayList songToAction={songToAction} setSongToAction={setSongToAction} />
+      <AddtoPlayList
+        songToAction={songToAction}
+        setSongToAction={setSongToAction}
+      />
       <Queue isOpen={isQueueOpen} onClose={() => setIsQueueOpen(false)} />
 
       {/* --- ULTRA-MINIMAL EXPANDED PLAYER --- */}

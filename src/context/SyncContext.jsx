@@ -3,6 +3,8 @@ import { db } from "../data/db.ts";
 import { addFullSong } from "../data/db_utils.ts";
 import stringSimilarity from "string-similarity";
 import useOnlineStatus from "../hooks/useOnlineStatus.jsx";
+import { invoke } from "@tauri-apps/api/core";
+
 
 const SyncContext = createContext();
 
@@ -21,47 +23,43 @@ export const SyncProvider = ({ children }) => {
       (await db.songs.toArray()).map(s => s.file_path)
     );
   
-    const tracks = await window.vibesApp.loadMusicLibrary();
-  
+    const tracks = await invoke('load_music_library');
+
     for (const track of tracks) {
-      // skip already indexed songs
       if (existingPaths.has(track.path)) continue;
-  
+    
       const queries = [
-        `${track.title || ""} ${track.artist || ""}`,
-        track.filename || "",
-        track.title || "",
-        `${track.artist || ""} ${track.title || ""}`,
+        `${track.title} ${track.artist}`,
+        track.filename,
+        track.title,
+        `${track.artist} ${track.title}`,
       ];
-      
-  for (let index = 0; index < queries.length; index++) {
-        const query = queries[index].trim();
-        if(!query) continue;
+    
+      for (const rawQuery of queries) {
+        const query = rawQuery?.trim();
+        if (!query) continue;
+    
         try {
           const res = await fetch(
             `https://vibes-spotify.onrender.com/api/track?title=${encodeURIComponent(query)}`
           );
-  
+    
           if (!res.ok) continue;
-  
+    
           const trackData = await res.json();
-  
           if (!newVerifyMatch(track, trackData)) continue;
-  
-          // if match was found
+    
           await addFullSong({
             ...trackData,
             file_path: track.path,
-            is_spotify: true
+            is_spotify: true,
           });
-  
-          
-          break; // stop querying once matched
-        } catch (err) {
-          // console.warn("Spotify lookup failed:", query, err);
-        }
+    
+          break;
+        } catch {}
       }
     }
+    
   
     setSyncing(false);
   };
@@ -119,15 +117,6 @@ export const SyncProvider = ({ children }) => {
     if(serverArtist.includes(localTitle) || localTitle.includes(serverArtist)){
       totalScore += 0.1;
     }
-
-    console.log({
-      localTitle,
-      serverTitle,
-      localArtist,
-      serverArtist,
-      totalScore
-    });
-    console.log("---------------------------------------");
     
     return totalScore >= 0.75;
   }

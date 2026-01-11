@@ -5,6 +5,7 @@ import React, {
   useRef,
   useEffect,
 } from "react";
+import { convertFileSrc } from '@tauri-apps/api/core';
 
 const PlayerContext = createContext();
 
@@ -62,7 +63,7 @@ export const PlayerProvider = ({ children }) => {
   const loadAndPlay = (track) => {
     if (!track) return;
     setCurrentTrack(track);
-    audioRef.current.src = track.file_path;
+    audioRef.current.src = convertFileSrc(track.file_path);
     audioRef.current.play();
     setIsPlaying(true);
   };

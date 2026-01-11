@@ -3,34 +3,33 @@ import { CloudCog, Minus, Square, X } from "lucide-react";
 import icon from "../assets/icon.png";
 
 const TitleBar = () => {
-  console.log("TitleBar rendering, window.vibesApp:", !!window.vibesApp);
 
-  const handleMinimize = () => {
-    console.log("Minimize clicked");
-    if (window.vibesApp) {
-      window.vibesApp.minimizeWindow();
-    } else {
-      console.error("vibesApp not found on window");
-    }
-  };
+  // const handleMinimize = () => {
+  //   console.log("Minimize clicked");
+  //   if (window.vibesApp) {
+  //     window.vibesApp.minimizeWindow();
+  //   } else {
+  //     console.error("vibesApp not found on window");
+  //   }
+  // };
 
-  const handleMaximize = async () => {
-    console.log("Maximize clicked");
-    if (window.vibesApp) {
-      window.vibesApp.maximizeWindow();
-    } else {
-      console.error("vibesApp not found on window");
-    }
-  };
+  // const handleMaximize = async () => {
+  //   console.log("Maximize clicked");
+  //   if (window.vibesApp) {
+  //     window.vibesApp.maximizeWindow();
+  //   } else {
+  //     console.error("vibesApp not found on window");
+  //   }
+  // };
 
-  const handleClose = () => {
-    console.log("Close clicked");
-    if (window.vibesApp) {
-      window.vibesApp.closeWindow();
-    } else {
-      console.error("vibesApp not found on window");
-    }
-  };
+  // const handleClose = () => {
+  //   console.log("Close clicked");
+  //   if (window.vibesApp) {
+  //     window.vibesApp.closeWindow();
+  //   } else {
+  //     console.error("vibesApp not found on window");
+  //   }
+  // };
 
   return (
     <div className="drag-region h-12 flex items-center justify-between px-4 glass border-b border-white/5">
@@ -47,7 +46,7 @@ const TitleBar = () => {
       </div>
 
       {/* Window Controls */}
-      <div className="no-drag flex items-center gap-2">
+      {/* <div className="no-drag flex items-center gap-2">
         <button
           onClick={handleMinimize}
           className="w-10 h-10 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors"
@@ -69,7 +68,7 @@ const TitleBar = () => {
         >
           <X size={16} className="text-white/70 group-hover:text-red-400" />
         </button>
-      </div>
+      </div> */}
     </div>
   );
 };
