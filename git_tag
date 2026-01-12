@@ -1,0 +1,69 @@
+
+if [ "$#" -ne 1 ]; then
+    echo "Usage: ./git_tag <new_version>"
+    exit 1
+fi
+
+if [ ! -f ./bumpVersion.js ]; then
+    echo "Error: bumpVersion.js not found!"
+    exit 1
+fi
+
+if [ ! -f ./package.json ]; then
+    echo "Error: package.json not found!"
+    exit 1
+fi
+
+if [ -z $1 ]; then
+    echo "Error: Version number cannot be empty!"
+    exit 1
+fi
+
+# if [ ! -z $1 ]; then
+#     if ! [[ $1 =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+#         echo "Error: Version number must be in the format X.Y.Z where X, Y, and Z are integers!"
+#         exit 1
+#     fi
+# fi
+
+Version="$1"
+Branch=$(git branch --show-current)
+
+if [ "$Branch" != "main" ]; then
+    echo "Error: You must be on the main branch to tag a new version!"
+    exit 1
+fi
+
+echo "Updating package.json to version $Version"
+
+node ./bumpVersion.js $Version
+
+if [ $? -ne 0 ]; then
+    echo "Error: Version bump failed!"
+    exit 1
+fi
+
+echo "Adding changes to git..."
+
+git add . 
+if [ $? -ne 0 ]; then
+    echo "Error: Git add failed!"
+    exit 1
+fi
+echo "Committing changes..."
+
+git commit -m "new app version $Version" && 
+
+echo "Creating tag $Version..."
+
+git tag "$Version" &&
+
+echo "Pushing changes to remote repository..."
+
+git push origin $Branch &&
+
+echo "Pushing tag $Version to remote repository..."
+
+git push origin $Version
+
+echo "Successfully tagged and pushed version $Version"

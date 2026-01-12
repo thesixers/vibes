@@ -3,9 +3,9 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
-  base: "./",
+  base: "./", // Still critical for relative paths!
   build: {
-    outDir: "dist-vite",
+    outDir: "dist", // ✅ Back to "dist"
     emptyOutDir: true,
   },
   server: {

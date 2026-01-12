@@ -1,6 +1,6 @@
 {
   "name": "vibes-desktop",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "type": "module",
   "description": "A beautiful cross-platform music player with liquid glass UI",
   "homepage": "https://github.com/vibes/vibes-desktop",
@@ -53,12 +53,13 @@
       "github"
     ],
     "directories": {
-      "output": "dist"
+      "output": "release"
     },
     "files": [
       "dist/**/*",
       "main.js",
-      "preload.js"
+      "preload.js",
+      "assets/**/*"
     ],
     "linux": {
       "target": [
@@ -66,7 +67,7 @@
       ],
       "category": "Audio",
       "icon": "build/icons",
-      "maintainer": "team@vibes.app"
+      "maintainer": "NA."
     },
     "win": {
       "target": "nsis",

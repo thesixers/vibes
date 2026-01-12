@@ -120,14 +120,14 @@ export const SyncProvider = ({ children }) => {
       totalScore += 0.1;
     }
 
-    console.log({
-      localTitle,
-      serverTitle,
-      localArtist,
-      serverArtist,
-      totalScore
-    });
-    console.log("---------------------------------------");
+    // console.log({
+    //   localTitle,
+    //   serverTitle,
+    //   localArtist,
+    //   serverArtist,
+    //   totalScore
+    // });
+    // console.log("---------------------------------------");
     
     return totalScore >= 0.75;
   }
