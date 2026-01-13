@@ -57,37 +57,8 @@ You’re free to:
 
 If you make something cool, feel free to contribute it back to the repo.
 
-And yeah—drop a ⭐ if you like the project.  
-It really helps.
-
 ---
-
-===========================================
-                 NA.
-===========================================
 
 *Don't forget to leave a ⭐ if you like the project!*
 
-**Created by NA.**  
-
----
-
-**— NA.**
-
----
-
 > **NA.**
-
----
-
-## — NA. —
-
-
----
-
-<p align="center"><b>NA.</b></p>
-
-
----
-
-### NA.
