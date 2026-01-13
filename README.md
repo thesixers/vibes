@@ -47,52 +47,6 @@ Old-school style, modern UI.
 
 ---
 
-# 📥 Installation Guide
-
-Vibes is available for Windows, macOS, and Linux. Choose your operating system below for instructions.
-
-## 🪟 Windows
-
-1.  Download the latest `Vibes-Setup-x.x.x.exe` from the [Releases page](#).
-2.  Double-click the downloaded file to launch the installer.
-3.  The app will automatically install and launch.
-4.  A shortcut will be added to your desktop and start menu.
-
-> **Note:** If you see a "Windows protected your PC" warning (SmartScreen), click **"More info"** and then **"Run anyway"**. This happens because the app is currently unsigned.
-
----
-
-## 🍎 macOS
-
-1.  Download the latest `Vibes-x.x.x.dmg` from the [Releases page](#).
-2.  Double-click the `.dmg` file to open it.
-3.  Drag the **Vibes** icon into the **Applications** folder.
-4.  Open your Applications folder and launch Vibes.
-
-> **Note:** If you see a warning that the app "cannot be opened because it is from an unidentified developer":
->
-> 1. Right-click (or Control-click) the app icon.
-> 2. Select **Open**.
-> 3. Click **Open** in the dialog box that appears.
-
----
-
-## 🐧 Linux
-
-We provide an **AppImage** which works on most Linux distributions (Ubuntu, Fedora, Debian, Arch, etc.).
-
-1.  Download the latest `Vibes-x.x.x.AppImage` from the [Releases page](#).
-2.  **Important:** You must make the file executable before running it.
-
-Open your terminal in the download location and run:
-
-```bash
-chmod +x Vibes-*.AppImage
-./Vibes-*.AppImage
-```
-
----
-
 ## Contributing
 
 You’re free to:
