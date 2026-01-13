@@ -1,73 +1,93 @@
-# 🎵 Vibes Desktop
-> **A GeNeSix App**
-
-![Electron](https://img.shields.io/badge/built%20with-Electron-2F3241?style=flat&logo=electron&logoColor=white)  
-![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Mac%20%7C%20Windows-lightgrey)  
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-
-**Vibes** is a cross-platform desktop music player built with Electron.
-
-It was born out of frustration with existing Linux music players, which often felt boring or lacked aesthetic appeal. Vibes is designed for those who still appreciate the classic way of downloading music and listening locally, but want a modern, beautiful UI.
+# 🎧 VIBES — Desktop Music Player  
+*A GeNeSix App*
 
 ---
 
-## ✨ Features
+## About Vibes
 
-- **Cross-Platform:** Runs smoothly on Linux, macOS, and Windows.  
-- **Modern UI:** A fresh, stylish alternative to traditional music players.  
-- **Smart Metadata:** Automatically fetches song details and cover art via the custom Vibes Spotify Server.  
-- **Local First:** Optimized for local file management with offline caching.  
+Vibes is a desktop music player I built because… honestly?  
+Most Linux music players look boring. Flat. Lifeless.  
+So I decided to build one that actually looks and feels good.
 
----
+I chose **Electron** so Vibes can run on:
 
-## 🛠️ How It Works
+- 🐧 Linux  
+- 🍎 macOS  
+- 🪟 Windows  
 
-1. **Scan:** Upon launch, the app loads music files from your system's default Music folder.  
-2. **Query:** It generates a search query based on the file metadata.  
-3. **Resolve:** The query is sent to the **Vibes Spotify Server** to fetch accurate details (Artist, Title, Album Art).  
-4. **Cache:** Successful matches are stored locally using **Dexie.js** (IndexedDB) to ensure instant loading in the future without re-fetching.  
+One codebase, all platforms.
 
 ---
 
-## 💻 Tech Stack
+## How It Works
 
-- **Framework:** [Electron](https://www.electronjs.org/)  
-- **Database:** [Dexie.js](https://dexie.org/) (IndexedDB wrapper)  
-- **Backend Integration:** Vibes Spotify Server  
+1. You download and open Vibes.  
+2. The app scans your **default Music folder**.  
+3. For each song, it generates a search query.  
+4. That query is sent to the **Vibes Spotify server**.  
+5. Spotify returns the real song details (title, artist, cover art, etc).  
+6. Only songs that successfully match get saved locally using:  
+   - **IndexedDB**  
+   - Powered by **Dexie.js**
+
+So your local music ends up looking clean, organized, and beautiful.
+
+---
+
+## Who It’s For
+
+Vibes is for people who still love:
+
+- Downloading music  
+- Owning their files  
+- Listening locally without streaming drama  
+
+Old-school style, modern UI.
 
 ---
 
-## 🚀 Getting Started
+## Contributing
 
-To run this project locally, follow these steps:
+You’re free to:
 
-```bash
-# Clone the repository
-git clone https://github.com/your-username/vibes-desktop.git
+- Clone it  
+- Tweak it  
+- Redesign it  
+- Break it and fix it again  
 
-# Go into the repository
-cd vibes-desktop
+If you make something cool, feel free to contribute it back to the repo.
 
-# Install dependencies
-npm install
-
-# Run the app
-npm start
-
-```
-
-## 🤝 Contributing
-
-This is an open project! Anyone is allowed to clone, tweak, or redesign the app to suit their taste.
-
-- Found a bug? Open an issue.  
-- Have an idea? Submit a Pull Request.  
+And yeah—drop a ⭐ if you like the project.  
+It really helps.
 
 ---
+
+===========================================
+                 NA.
+===========================================
+
+*Don't forget to leave a ⭐ if you like the project!*
 
 **Created by NA.**  
-*Don't forget to leave a ⭐ if you like the project!*
 
 ---
 
 **— NA.**
+
+---
+
+> **NA.**
+
+---
+
+## — NA. —
+
+
+---
+
+<p align="center"><b>NA.</b></p>
+
+
+---
+
+### NA.
