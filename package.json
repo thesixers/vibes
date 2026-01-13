@@ -1,6 +1,6 @@
 {
   "name": "vibes-desktop",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "type": "module",
   "description": "A beautiful cross-platform music player with liquid glass UI",
   "homepage": "https://github.com/vibes/vibes-desktop",
@@ -63,11 +63,30 @@
     ],
     "linux": {
       "target": [
-        "AppImage"
+        "AppImage",
+        "deb",
+        "rpm"
       ],
       "category": "Audio",
       "icon": "build/icons",
-      "maintainer": "NA."
+      "maintainer": "NA.",
+      "synopsis": "A GeNeSix Desktop Music Player",
+      "description": "Cross-platform music player with local file management and smart metadata fetching."
+    },
+    "deb": {
+      "depends": [
+        "libnotify4",
+        "libxtst6",
+        "libnss3",
+        "libappindicator1"
+      ]
+    },
+    "rpm": {
+      "depends": [
+        "libnotify",
+        "libXtst",
+        "nss"
+      ]
     },
     "win": {
       "target": "nsis",

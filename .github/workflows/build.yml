@@ -27,15 +27,21 @@ jobs:
           node-version: 20
           cache: 'npm'
 
+      # 👇 NEW: Install 'rpm' so Ubuntu can build Fedora apps
+      - name: Install Linux Build Tools
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm
+
       - name: Install Dependencies
         run: npm install
 
-      # 👇 THIS WAS MISSING! 
-      # You must convert React -> HTML/CSS/JS before Electron packages it.
+      # Build React (Convert JSX -> HTML/CSS/JS)
       - name: Build React App
         run: npm run build
 
-      # LINUX BUILD
+      # LINUX BUILD (Builds AppImage, Deb, & RPM based on package.json)
       - name: Build & Release (Linux)
         if: matrix.os == 'ubuntu-latest'
         env:
