@@ -54,6 +54,8 @@ npm install
 # Run the app
 npm start
 
+```
+
 ## 🤝 Contributing
 
 This is an open project! Anyone is allowed to clone, tweak, or redesign the app to suit their taste.
