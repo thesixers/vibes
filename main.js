@@ -13,7 +13,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
-    minWidth: 1200,
+    minWidth: 380,
     minHeight: 700,
     frame: false, // CRITICAL: Frameless window for custom title bar
     backgroundColor: "#050505",
@@ -151,6 +151,10 @@ app.on("window-all-closed", () => {
     app.quit();
   }
 });
+
+// In your electron main file:
+app.commandLine.appendSwitch('ignore-certificate-errors');
+app.commandLine.appendSwitch('allow-insecure-localhost', 'true');
 
 function cleanTitle(common, file) {
   if(!common.title && !file) return "";

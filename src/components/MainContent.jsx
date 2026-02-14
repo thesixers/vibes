@@ -1,29 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks'; 
-import { ChevronRight, Play, Music } from 'lucide-react';
+import { ChevronRight, Play, Music, Disc, Mic2, ArrowRight, Layers, Activity } from 'lucide-react';
 import { usePlayer } from '../context/PlayerContext';
 import { db } from '../data/db'; 
+import { motion, AnimatePresence } from 'framer-motion';
 
 const MainContent = () => {
   const navigate = useNavigate();
-  const { playPlaylist, currentTrack, togglePlay } = usePlayer();
+  const { playPlaylist, currentTrack, isPlaying } = usePlayer();
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // --- FETCH DATA ---
   const data = useLiveQuery(async () => {
-    // A. Fetch recent songs (New Waves)
-    const songs = await db.songs.limit(10).toArray(); 
-    const recentSongs = songs.reverse().slice(0, 6);
-
-    // B. Fetch Playlists (Vibe Curation)
+    const songs = await db.songs.limit(20).toArray(); 
+    const recentSongs = songs.reverse().slice(0, 8);
     const playlists = await db.playlists.limit(4).toArray();
-
-    // C. Fetch Featured Artists (Hero Carousel)
     const allArtists = await db.artists.limit(5).toArray();
-    const featuredArtists = allArtists.length > 0 ? allArtists : [];
 
-    // Hydrate songs with artist/album info
     const hydratedSongs = await Promise.all(recentSongs.map(async (s) => {
       const artists = await db.artists.where('id').anyOf(s.artist_ids).toArray();
       const album = await db.albums.get(s.album_id);
@@ -33,223 +26,186 @@ const MainContent = () => {
     return {
       recentSongs: hydratedSongs,
       playlists,
-      featuredArtists
+      featuredArtists: allArtists || []
     };
   });
 
-  // Carousel Timer
   useEffect(() => {
     if (!data?.featuredArtists.length) return;
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % data.featuredArtists.length);
-    }, 5000);
+    }, 8000);
     return () => clearInterval(timer);
   }, [data?.featuredArtists.length]);
 
-  if (!data) return <div className="p-8 text-white/50">Loading vibes...</div>;
+  if (!data) return (
+    <div className="p-10 flex flex-col gap-4">
+      <div className="h-4 w-32 bg-slate-100 dark:bg-white/5 animate-pulse rounded" />
+      <div className="h-[350px] w-full bg-slate-100 dark:bg-white/5 animate-pulse rounded-2xl" />
+    </div>
+  );
 
   const { recentSongs, playlists, featuredArtists } = data;
   const currentArtist = featuredArtists[currentSlide];
 
   return (
-    <div className="flex-1 overflow-y-auto custom-scrollbar bg-gradient-to-b from-black to-purple-900/10">
-      <div className="p-6 md:p-8 space-y-10">
-        
-        {/* --- HERO: FEATURED ARTIST CAROUSEL --- */}
-        {currentArtist ? (
-          <div 
-            // ✅ LINK TO ARTIST PAGE
-            onClick={() => navigate(`/artist/${currentArtist.id}`)} 
-            className="relative h-64 md:h-80 rounded-2xl overflow-hidden group cursor-pointer shadow-2xl shadow-purple-900/20"
-          >
-            {/* Background Image */}
-            <div className="absolute inset-0">
-               {currentArtist.images?.[0]?.url ? (
-                 <img 
-                   src={currentArtist.images[0].url} 
-                   alt={currentArtist.name} 
-                   className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" 
-                 />
-               ) : (
-                 <div className="w-full h-full bg-gradient-to-br from-purple-900 via-indigo-900 to-black" />
-               )}
-            </div>
-            
-            {/* Overlays */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
-            
-            {/* Content */}
-            <div className="relative h-full flex flex-col justify-end p-8 md:p-10">
-              <span className="inline-block px-3 py-1 mb-4 text-xs font-bold tracking-widest text-white uppercase bg-white/10 backdrop-blur-md rounded-full w-fit border border-white/10">
-                Featured Artist
-              </span>
-              <h1 className="text-5xl md:text-7xl font-vibes font-bold mb-4 text-white tight-leading drop-shadow-lg">
-                {currentArtist.name}
-              </h1>
-              
-              <div className="flex gap-3">
-                {/* Play Button (Stop Propagation prevents navigating to page) */}
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // Optional: Play this artist's top songs immediately
-                    navigate(`/artist/${currentArtist.id}`);
-                  }}
-                  className="bg-purple-electric hover:bg-purple-500 text-white px-6 py-3 rounded-full font-bold transition-all shadow-glow-purple flex items-center gap-2"
-                >
-                  <Play size={18} fill="currentColor" /> Play Now
-                </button>
-                
-                {/* View Profile Button */}
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(`/artist/${currentArtist.id}`);
-                  }}
-                  className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-6 py-3 rounded-full font-bold transition-all border border-white/10"
-                >
-                  View Profile
-                </button>
-              </div>
-            </div>
-
-            {/* Carousel Indicators */}
-            <div className="absolute bottom-8 right-8 flex gap-2">
-              {featuredArtists.map((_, index) => (
-                <div 
-                  key={index}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                    index === currentSlide ? 'bg-white w-8' : 'bg-white/30 w-2'
-                  }`} 
-                />
-              ))}
-            </div>
+    <div className="flex-1 flex flex-col gap-20 pb-32 max-w-7xl mx-auto w-full">
+      
+      {/* --- MATURE HERO: ARTIST SPOTLIGHT --- */}
+      {currentArtist ? (
+        <section className="relative w-full h-[380px] rounded-3xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-sm group cursor-pointer bg-surface">
+          <div className="absolute inset-0 z-0">
+             {currentArtist.images?.[0]?.url ? (
+               <img 
+                 src={currentArtist.images[0].url} 
+                 alt={currentArtist.name} 
+                 className="w-full h-full object-cover grayscale-[40%] group-hover:grayscale-0 transition-all duration-1000 scale-105" 
+               />
+             ) : (
+               <div className="w-full h-full bg-slate-50 dark:bg-white/5" />
+             )}
           </div>
-        ) : (
-          // Empty State
-          <div className="h-64 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-            <p className="text-white/40">Add artists to your library to see them here</p>
-          </div>
-        )}
-
-        {/* --- SECTION 1: VIBE CURATION (PLAYLISTS) --- */}
-        <div>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-white font-vibes">Your Vibes</h2>
-            <button 
-              onClick={() => navigate('/library')}
-              className="text-sm text-purple-electric hover:text-white transition-colors font-medium flex items-center gap-1"
-            >
-              See All <ChevronRight size={16} />
-            </button>
-          </div>
-
-          {playlists.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {playlists.map((item) => (
-                <div
-                  key={item.id}
-                  onClick={() => navigate(`/playlist/${item.id}`)}
-                  className="group bg-white/5 hover:bg-white/10 p-4 rounded-xl border border-white/5 hover:border-white/20 transition-all cursor-pointer flex flex-col gap-3"
-                >
-                  <div className="aspect-square rounded-lg relative overflow-hidden shadow-lg">
-                    {item.cover_image?.url || item.cover_image_path ? (
-                      <img src={item.cover_image?.url || item.cover_image_path} alt={item.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-gray-800 to-black flex items-center justify-center">
-                        <Music className="text-white/20" size={32} />
-                      </div>
-                    )}
-                    
-                    {/* Play Button Overlay */}
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/playlist/${item.id}`); 
-                        }}
-                        className="w-12 h-12 rounded-full bg-purple-electric text-white flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
-                      >
-                        <Play size={20} fill="currentColor" className="ml-1" />
-                      </button>
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-white truncate">{item.title}</h3>
-                    <p className="text-sm text-white/50">{item.song_ids?.length || 0} tracks</p>
-                  </div>
+          
+          <div className="absolute inset-0 bg-gradient-to-t from-bgMain via-bgMain/40 to-transparent" />
+          
+          <div className="relative h-full flex flex-col justify-end p-12 z-10">
+            <AnimatePresence mode="wait">
+              <motion.div 
+                key={currentArtist.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="space-y-6"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="px-3 py-1 text-[10px] font-black tracking-[0.3em] text-primary border border-primary/20 bg-primary/5 rounded-md uppercase">
+                    Artist Spotlight
+                  </span>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-white/30 text-sm italic">No playlists created yet.</div>
-          )}
+                
+                <h1 className="text-6xl md:text-8xl font-black text-text-main leading-[0.85] tracking-tighter uppercase max-w-4xl">
+                  {currentArtist.name}
+                </h1>
+                
+                <button 
+                  onClick={(e) => { e.stopPropagation(); navigate(`/artist/${currentArtist.id}`); }}
+                  className="flex items-center gap-4 text-xs font-black uppercase tracking-[0.2em] text-text-main hover:text-primary transition-all group/btn"
+                >
+                  View Catalog <ArrowRight size={18} className="group-hover/btn:translate-x-2 transition-transform" />
+                </button>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Precision Indicators */}
+          <div className="absolute bottom-12 right-12 flex items-center gap-3">
+            {featuredArtists.map((_, index) => (
+              <div 
+                key={index}
+                className={`transition-all duration-700 rounded-full ${
+                  index === currentSlide ? 'bg-primary w-8 h-1' : 'bg-slate-300 dark:bg-white/10 w-2 h-1'
+                }`} 
+              />
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {/* --- CURATION INDEX: MODULAR GRID --- */}
+      <section className="space-y-10">
+        <div className="flex items-center justify-between px-2">
+          <div className="flex items-center gap-3">
+            <Layers size={18} className="text-primary" />
+            <h2 className="text-xs font-black text-text-muted uppercase tracking-[0.3em]">Curation Index</h2>
+          </div>
+          <button 
+            onClick={() => navigate('/library')}
+            className="text-[10px] font-black uppercase tracking-widest text-text-muted hover:text-primary transition-colors flex items-center gap-2"
+          >
+            Archive <ChevronRight size={14} />
+          </button>
         </div>
 
-        {/* --- SECTION 2: NEW WAVES (RECENT SONGS) --- */}
-        <div>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-white font-vibes">New Waves</h2>
-          </div>
-
-          {recentSongs.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {recentSongs.map((item, index) => (
-                <div
-                  key={item.id}
-                  onClick={() => {
-                    if (
-                      currentTrack &&
-                      currentTrack.id === item.id
-                    )
-                      return togglePlay();
-
-                      playPlaylist(recentSongs, index);
-                  }}
-                  className="group bg-white/5 hover:bg-white/10 p-3 rounded-xl border border-white/5 hover:border-white/20 transition-all cursor-pointer"
-                >
-                  <div className="aspect-square rounded-lg mb-3 relative overflow-hidden shadow-md">
-                    {/* Image Priority: Song > Album > Artist > Default */}
-                    {item.images?.[1]?.url || item.album?.images?.[1]?.url || item.artists?.[0]?.images?.[1]?.url ? (
-                      <img 
-                        src={item.images?.[1]?.url || item.album?.images?.[1]?.url || item.artists?.[0]?.images?.[1]?.url} 
-                        alt={item.title} 
-                        className="w-full h-full object-cover" 
-                      />
-                    ) : (
-                       <div className="w-full h-full bg-gradient-to-br from-purple-electric/20 to-purple-glow/20 flex items-center justify-center">
-                         <Music size={24} className="text-white/30" />
-                       </div>
-                    )}
-                    
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <div className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center shadow-lg">
-                        <Play size={16} fill="currentColor" className="ml-0.5" />
-                      </div>
-                    </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+          {playlists.map((item) => (
+            <motion.div
+              key={item.id}
+              whileHover={{ y: -6 }}
+              onClick={() => navigate(`/playlist/${item.id}`)}
+              className="group cursor-pointer space-y-4"
+            >
+              <div className="aspect-square rounded-2xl relative overflow-hidden bg-surface border border-slate-100 dark:border-white/5 shadow-sm">
+                {item.cover_image?.url || item.cover_image_path ? (
+                  <img src={item.cover_image?.url || item.cover_image_path} className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-700" alt="" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-text-muted/10">
+                    <Music size={40} />
                   </div>
-                  <h3 className="font-medium text-white text-sm mb-1 truncate">{item.title}</h3>
-                  <p className="text-xs text-white/50 truncate">
-                    {item.artists?.map(a => a.name).join(', ') || 'Unknown'}
+                )}
+                <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+                   <div className="w-14 h-14 bg-white text-primary rounded-2xl flex items-center justify-center shadow-xl">
+                      <Play size={24} fill="currentColor" />
+                   </div>
+                </div>
+              </div>
+              <div className="px-1">
+                <h3 className="text-sm font-bold text-text-main uppercase tracking-tight truncate group-hover:text-primary transition-colors">{item.title}</h3>
+                <p className="text-[10px] text-text-muted font-black uppercase tracking-widest mt-1">{item.song_ids?.length || 0} Records</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* --- RECEPTION LOG: DATA LIST --- */}
+      <section className="space-y-10">
+        <div className="flex items-center gap-3 px-2">
+          <Activity size={18} className="text-slate-400" />
+          <h2 className="text-xs font-black text-text-muted uppercase tracking-[0.3em]">Recent Reception</h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-3">
+          {recentSongs.map((item, index) => {
+             const isCurrent = currentTrack?.id === item.id;
+             return (
+              <div
+                key={item.id}
+                onClick={() => playPlaylist(recentSongs, index)}
+                className={`group flex items-center gap-5 p-4 rounded-2xl transition-all cursor-pointer border ${
+                  isCurrent 
+                    ? "bg-surface border-primary/20 shadow-sm" 
+                    : "border-transparent hover:bg-surface hover:border-slate-100 dark:hover:border-white/5"
+                }`}
+              >
+                <div className="h-12 w-12 rounded-xl overflow-hidden bg-slate-50 dark:bg-white/5 shrink-0 border border-slate-200 dark:border-white/10 relative">
+                   <img src={item.images?.[1]?.url || item.album?.images?.[1]?.url} className="w-full h-full object-cover" alt="" />
+                   {isCurrent && isPlaying && (
+                     <div className="absolute inset-0 bg-primary/30 flex items-center justify-center backdrop-blur-[1px]">
+                        <div className="w-1 h-3 bg-white mx-[0.5px] animate-bounce" />
+                        <div className="w-1 h-4 bg-white mx-[0.5px] animate-bounce [animation-delay:0.2s]" />
+                        <div className="w-1 h-2 bg-white mx-[0.5px] animate-bounce [animation-delay:0.4s]" />
+                     </div>
+                   )}
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <h3 className={`text-base font-bold truncate ${isCurrent ? 'text-primary' : 'text-text-main'}`}>
+                    {item.title}
+                  </h3>
+                  <p className="text-[10px] font-black uppercase tracking-wider text-text-muted truncate opacity-80">
+                    {item.artists?.map(a => a.name).join(', ')}
                   </p>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="p-8 rounded-xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center text-white/40 gap-2">
-              <Music size={32} />
-              <p>Your library is empty.</p>
-              <button onClick={() => navigate('/search')} className="text-purple-electric hover:underline">
-                Go to Search
-              </button>
-            </div>
-          )}
+                
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity pr-2">
+                   <Play size={16} className="text-primary" fill="currentColor" />
+                </div>
+              </div>
+            );
+          })}
         </div>
+      </section>
 
-        
-        <div className='h-[100px]'/>
-      </div>
     </div>
   );
 };

@@ -1,73 +1,78 @@
+/* 1. Import MUST be first */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800&display=swap');
+
+/* 2. Then Tailwind directives */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@font-face{
-  font-family: "Lobster";
-  src: url('./assets/fonts/Lobster-Regular.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-}
-
+/* --- THEME VARIABLES --- */
 @layer base {
+  :root {
+    /* LIGHT MODE (Solar Pop) */
+    --bg-main: 248 250 252;    /* Slate-50 */
+    --surface: 255 255 255;    /* White */
+    --text-main: 30 41 59;     /* Slate-800 */
+    --text-muted: 100 116 139; /* Slate-500 */
+    --primary: 249 115 22;     /* Orange-500 */
+    --border: 226 232 240;     /* Slate-200 */
+  }
+
+  .dark {
+    /* DARK MODE (Midnight Neon) */
+    --bg-main: 2 6 23;         /* Slate-950 (Deep Space) */
+    --surface: 15 23 42;       /* Slate-900 */
+    --text-main: 248 250 252;  /* Slate-50 */
+    --text-muted: 148 163 184; /* Slate-400 */
+    --primary: 251 146 60;     /* Orange-400 (Brighter for dark mode) */
+    --border: 30 41 59;        /* Slate-800 */
+  }
+
   body {
-    @apply bg-void text-white font-sans antialiased;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
+    background-color: rgb(var(--bg-main));
+    color: rgb(var(--text-main));
+    font-family: 'Outfit', sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    overflow: hidden; 
   }
 
   #root {
-    @apply w-screen h-screen;
+    @apply w-screen h-screen flex;
   }
 }
 
 @layer components {
-  /* Liquid Glass Effect */
+  /* Glass works in both modes now */
   .glass {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10;
+    background-color: rgba(var(--surface), 0.8);
+    @apply backdrop-blur-xl border border-white/20 dark:border-white/5 shadow-sm;
   }
 
-  .glass-strong {
-    @apply bg-white/10 backdrop-blur-2xl border border-white/20;
+  .btn-primary {
+    @apply bg-[rgb(var(--primary))] text-white font-bold px-6 py-2.5 rounded-2xl
+           shadow-soft transition-all duration-200
+           hover:brightness-110 hover:-translate-y-0.5
+           active:scale-95 active:shadow-none;
   }
 
-  /* Custom Scrollbar */
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 8px;
+  .btn-ghost {
+    @apply p-2 rounded-xl text-[rgb(var(--text-muted))] transition-all duration-200
+           hover:bg-slate-100 dark:hover:bg-slate-800 
+           hover:text-[rgb(var(--text-main))] hover:scale-105
+           active:scale-95;
   }
-
-  .custom-scrollbar::-webkit-scrollbar-track {
-    @apply bg-transparent;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-white/10 rounded-full;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    @apply bg-white/20;
-  }
-
-  /* Purple Glow Button */
-  .btn-glow {
-    @apply bg-purple-electric text-white px-6 py-2 rounded-full 
-           transition-all duration-300 hover:shadow-glow-purple-lg
-           hover:scale-105 active:scale-95;
-  }
-
-  /* Draggable Title Bar Region */
-  .drag-region {
-    -webkit-app-region: drag;
-  }
-
-  .no-drag {
-    -webkit-app-region: no-drag;
-  }
+  
+  .drag-region { -webkit-app-region: drag; }
+  .no-drag { -webkit-app-region: no-drag; }
 }
 
-@layer utilities {
-  .text-shadow-glow {
-    text-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
-  }
+/* Scrollbars */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.5);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(var(--primary));
 }

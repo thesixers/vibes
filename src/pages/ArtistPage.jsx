@@ -1,203 +1,168 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
-import { ArrowLeft, Play, Pause, Disc, Mic2, Clock, Music } from "lucide-react";
+import { 
+  ArrowLeft, 
+  Play, 
+  Pause, 
+  Disc, 
+  Mic2, 
+  Clock, 
+  Music, 
+  ExternalLink,
+  ChevronRight
+} from "lucide-react";
 import { usePlayer } from "../context/PlayerContext";
 import { db } from "../data/db";
-import { formatDuration } from "../data/utils"; // Ensure correct path
+import { formatDuration } from "../data/utils";
 import Loading from "../components/Loading";
+import { motion } from "framer-motion";
 
 const ArtistPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { playPlaylist, currentTrack, isPlaying, togglePlay } = usePlayer();
 
-  // --- SMART DATA FETCHING ---
   const artistData = useLiveQuery(async () => {
     if (!id) return null;
-
-    // 1. Fetch Artist Details (Using ID directly as string/number based on DB)
-    // Dexie will auto-handle type if your schema is defined correctly.
     const artist = await db.artists.get(id);
-
     if (!artist) return null;
 
-    // 2. Fetch All Songs by this Artist
-    const rawSongs = await db.songs.where("artist_ids").equals(id).toArray();
+    // Direct filter for more accurate relational fetching
+    const rawSongs = await db.songs.filter(song => song.artist_ids.includes(id)).toArray();
 
-    // 3. Hydrate Songs (Add Album info for images)
-    const songs = await Promise.all(
+    const hydratedSongs = await Promise.all(
       rawSongs.map(async (song) => {
         const album = await db.albums.get(song.album_id);
-        const artists = await db.artists
-          .where("id")
-          .anyOf(song.artist_ids)
-          .toArray();
+        const artists = await db.artists.bulkGet(song.artist_ids);
         return { ...song, album, artists };
       })
     );
 
-    // 4. Extract Unique Albums
     const albumMap = new Map();
-    songs.forEach((song) => {
-      if (song.album && song.album?.type === "album" && !albumMap.has(song.album.id)) {
+    hydratedSongs.forEach((song) => {
+      if (song.album && !albumMap.has(song.album.id)) {
         albumMap.set(song.album.id, song.album);
       }
     });
-    const albums = Array.from(albumMap.values());
 
-    return {
-      artist,
-      songs,
-      albums,
-      topSongs: songs.slice(0, 10), // Show top 10 for a fuller list
-    };
-  }, [id]);
-
-  if (!artistData)
-    return (
-      <Loading />
+    const albums = Array.from(albumMap.values()).sort((a, b) => 
+      new Date(b.release_date) - new Date(a.release_date)
     );
 
-  const { artist, songs, albums, topSongs } = artistData;
+    return { artist, songs: hydratedSongs, albums };
+  }, [id]);
 
-  // Use the image of the first album as a fallback cover if artist has no image
-  const artistImage =
-    artist.images?.[0]?.url || albums[0]?.images?.[0]?.url || null;
+  if (!artistData) return <Loading />;
+
+  const { artist, songs, albums } = artistData;
+  const artistImage = artist.images?.[0]?.url || albums[0]?.images?.[0]?.url;
 
   return (
-    <div className="flex-1 overflow-y-auto custom-scrollbar bg-black pb-32">
-      {/* --- MODERN HEADER DESIGN --- */}
-      <div className="relative w-full h-[50vh] min-h-[400px]">
-        {/* Full Bleed Background */}
-        <div className="absolute inset-0">
-          {artistImage ? (
-            <img
-              src={artistImage}
-              alt={artist.name}
-              className="w-full h-full object-cover opacity-60 mask-gradient-bottom"
-            />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-b from-zinc-800 to-black" />
-          )}
-          {/* Custom Gradient Mask for text legibility */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent" />
-        </div>
+    <div className="flex-1 flex flex-col min-h-0 bg-bgMain pb-32">
+      
+      {/* --- MATURE MINIMAL HEADER --- */}
+      <div className="relative shrink-0 p-6 md:p-12 border-b border-slate-100 dark:border-white/5">
+        <div className="flex flex-col md:flex-row gap-10 items-center md:items-end max-w-7xl mx-auto">
+          
+          {/* Back Navigation */}
+          <button
+            onClick={() => navigate(-1)}
+            className="absolute top-6 left-6 p-2 rounded-xl border border-slate-200 dark:border-white/10 text-text-muted hover:text-primary hover:border-primary/30 transition-all"
+          >
+            <ArrowLeft size={20} strokeWidth={2.5} />
+          </button>
 
-        {/* Navigation */}
-        <button
-          onClick={() => navigate(-1)}
-          className="absolute top-8 left-8 z-20 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center text-white transition-all"
-        >
-          <ArrowLeft size={20} />
-        </button>
+          {/* Clean Profile Image */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-48 h-48 md:w-64 md:h-64 rounded-[2rem] overflow-hidden bg-surface shadow-sm border border-slate-200 dark:border-white/10 shrink-0"
+          >
+            {artistImage ? (
+              <img src={artistImage} className="w-full h-full object-cover grayscale-[20%] hover:grayscale-0 transition-all duration-700" alt={artist.name} />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-text-muted/20">
+                <Mic2 size={60} />
+              </div>
+            )}
+          </motion.div>
 
-        {/* Artist Info - Left Aligned, Bold Typography */}
-        <div className="absolute bottom-0 left-0 w-full p-8 md:p-12 z-10 flex flex-col justify-end items-start gap-6">
-          {/* Tag */}
-          <div className="flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-sm rounded-full border border-white/5">
-            <Mic2 size={12} className="text-purple-electric" />
-            <span className="text-xs font-bold tracking-widest text-white uppercase">
-              Artist
-            </span>
-          </div>
+          {/* Identity Block */}
+          <div className="flex-1 space-y-4 text-center md:text-left">
+            <div className="flex items-center justify-center md:justify-start gap-3">
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted border border-slate-200 dark:border-white/10 px-3 py-1 rounded-md">
+                Verified Artist
+              </span>
+            </div>
+            
+            <h1 className="text-5xl md:text-8xl font-black text-text-main tracking-tighter uppercase leading-none">
+              {artist.name}
+            </h1>
 
-          {/* Name - Huge & Tight */}
-          <h1 className="text-6xl font-vibes md:text-9xl font-black text-white tracking-tighter leading-none mix-blend-overlay opacity-90">
-            {artist.name}
-          </h1>
+            <div className="flex items-center justify-center md:justify-start gap-6 font-bold text-text-muted text-[11px] uppercase tracking-[0.15em]">
+              <span className="border-b-2 border-primary/20 pb-1">{songs.length} Tracks</span>
+              <span className="border-b-2 border-slate-100 dark:border-white/10 pb-1">{albums.length} Releases</span>
+            </div>
 
-          {/* Meta Row */}
-          <div className="flex items-center gap-6 text-white/60 font-medium">
-            <span>{songs.length} Tracks</span>
-            <span className="w-1 h-1 bg-white/40 rounded-full" />
-            <span>{albums.length} Releases</span>
-          </div>
-
-          {/* Action Row */}
-          <div className="flex items-center gap-4 mt-2">
-            <button
-              onClick={() => playPlaylist(songs, 0)}
-              className="h-14 px-8 rounded-full bg-white text-black font-bold text-lg hover:scale-105 transition-transform flex items-center gap-2"
-            >
-              <Play size={20} fill="black" /> PLAY
-            </button>
-            <button className="h-14 w-14 rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-white/10 transition-colors">
-              <Music size={20} />
-            </button>
+            <div className="pt-4">
+              <button
+                onClick={() => playPlaylist(songs, 0)}
+                className="h-14 px-10 bg-text-main text-bgMain rounded-xl font-black text-sm uppercase tracking-widest shadow-md hover:bg-primary hover:text-white transition-all active:scale-95"
+              >
+                Play Everything
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="p-6 md:p-12 grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-12">
-        {/* --- LEFT COLUMN: TRACKS --- */}
-        <div>
-          <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
-            Top Tracks
-            <span className="text-sm font-normal text-white/40">
-              Most played
-            </span>
+      {/* --- CONTENT LAYOUT --- */}
+      <div className="flex-1 px-6 md:px-12 py-10 grid grid-cols-1 lg:grid-cols-12 gap-12 max-w-7xl mx-auto w-full">
+        
+        {/* LEFT: TRACKLIST (High Density) */}
+        <div className="lg:col-span-8">
+          <h2 className="text-xs font-black text-text-muted uppercase tracking-[0.2em] mb-8 flex items-center gap-3">
+            <div className="h-px flex-1 bg-slate-100 dark:bg-white/5" />
+            Comprehensive Catalog
+            <div className="h-px w-8 bg-primary/40" />
           </h2>
 
           <div className="space-y-1">
-            {topSongs.map((song, index) => {
+            {songs.map((song, index) => {
               const isCurrent = currentTrack?.id === song.id;
-              const img =
-                song.album?.images?.[2]?.url || song.album?.images?.[0]?.url;
-
               return (
                 <div
                   key={song.id}
-                  onClick={() => {
-                    if (currentTrack && currentTrack.id === song.id)
-                      return togglePlay();
-
-                    playPlaylist(topSongs, index);
-                  }}
-                  className={`
-                                group flex items-center gap-4 p-3 rounded-xl transition-all cursor-pointer border border-transparent
-                                ${
-                                  isCurrent
-                                    ? "bg-white/10 border-white/5"
-                                    : "hover:bg-white/5 hover:border-white/5"
-                                }
-                            `}
+                  onClick={() => playPlaylist(songs, index)}
+                  className={`group flex items-center gap-6 p-3 rounded-xl transition-all cursor-pointer border ${
+                    isCurrent 
+                    ? "bg-surface border-primary/20 shadow-sm" 
+                    : "border-transparent hover:bg-surface hover:border-slate-100 dark:hover:border-white/5"
+                  }`}
                 >
-                  <span className="w-6 text-center text-white/30 font-mono text-sm group-hover:hidden">
-                    {index + 1}
-                  </span>
-                  <span className="w-6 hidden group-hover:flex justify-center text-white">
-                    <Play size={14} fill="white" />
-                  </span>
-
-                  {img ? (
-                    <img
-                      src={img}
-                      alt=""
-                      className="w-12 h-12 rounded bg-white/5 object-cover"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 rounded bg-white/5 flex items-center justify-center">
-                      <Music size={16} className="text-white/20" />
-                    </div>
-                  )}
+                  <div className="w-8 text-center text-[10px] font-black text-text-muted">
+                    {isCurrent && isPlaying ? (
+                       <span className="text-primary tracking-tighter">PLAYING</span>
+                    ) : (
+                       <span className="group-hover:text-primary transition-colors">{(index + 1).toString().padStart(2, '0')}</span>
+                    )}
+                  </div>
 
                   <div className="flex-1 min-w-0">
-                    <h4
-                      className={`font-medium truncate text-base ${
-                        isCurrent ? "text-purple-electric" : "text-white"
-                      }`}
-                    >
+                    <h4 className={`text-sm font-bold truncate ${isCurrent ? "text-primary" : "text-text-main"}`}>
                       {song.title}
                     </h4>
-                    <p className="text-xs text-white/40 truncate">
-                      {song.album?.title}
+                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider truncate">
+                      {song.album?.title || "Single"}
                     </p>
                   </div>
 
-                  <div className="text-white/30 text-xs font-mono">
-                    {formatDuration(song.duration)}
+                  <div className="flex items-center gap-6">
+                    <span className="text-[10px] font-mono font-bold text-text-muted opacity-0 group-hover:opacity-100 transition-opacity">
+                      {formatDuration(song.duration)}
+                    </span>
+                    <ChevronRight size={14} className="text-text-muted opacity-0 group-hover:opacity-100 transition-all" />
                   </div>
                 </div>
               );
@@ -205,52 +170,41 @@ const ArtistPage = () => {
           </div>
         </div>
 
-        {/* --- RIGHT COLUMN: DISCOGRAPHY --- */}
-        <div className="space-y-8">
-          {albums.length > 0 && (
-            <section>
-              <h2 className="text-xl font-bold text-white mb-6">
-                Latest Releases
-              </h2>
-              <div className="grid grid-cols-2 gap-4">
-                {albums.slice(0, 4).map((album) => (
-                  <div
-                    key={album.id}
-                    onClick={() => navigate(`/playlist/${album.id}`)}
-                    className="group cursor-pointer space-y-3"
-                  >
-                    <div className="aspect-square rounded-xl overflow-hidden bg-white/5 relative">
-                      {album.images?.[0]?.url ? (
-                        <img
-                          src={album.images[0].url}
-                          alt={album.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-white/20">
-                          <Disc />
-                        </div>
-                      )}
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-white text-sm truncate group-hover:underline decoration-white/30 underline-offset-4">
-                        {album.title}
-                      </h3>
-                      <p className="text-xs text-white/40">
-                        {new Date(album.release_date).getFullYear()} • Album
-                      </p>
+        {/* RIGHT: RELEASES (Clean Grid) */}
+        <div className="lg:col-span-4 space-y-10">
+          <section>
+            <h2 className="text-xs font-black text-text-muted uppercase tracking-[0.2em] mb-8">Releases</h2>
+            <div className="grid grid-cols-1 gap-6">
+              {albums.map((album) => (
+                <div
+                  key={album.id}
+                  onClick={() => navigate(`/playlist/${album.id}`)}
+                  className="group flex gap-4 cursor-pointer"
+                >
+                  <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0 border border-slate-100 dark:border-white/5">
+                    <img
+                      src={album.images?.[1]?.url || album.images?.[0]?.url}
+                      alt={album.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="flex flex-col justify-center min-w-0">
+                    <h3 className="font-bold text-text-main text-xs uppercase truncate leading-tight group-hover:text-primary transition-colors">
+                      {album.title}
+                    </h3>
+                    <p className="text-[10px] text-text-muted font-black uppercase tracking-widest mt-1">
+                      {new Date(album.release_date).getFullYear()}
+                    </p>
+                    <div className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                       <ExternalLink size={12} className="text-primary" />
                     </div>
                   </div>
-                ))}
-              </div>
-              {albums.length > 4 && (
-                <button className="mt-6 w-full py-3 rounded-lg border border-white/10 text-sm font-bold text-white hover:bg-white/5 transition-colors">
-                  View Discography
-                </button>
-              )}
-            </section>
-          )}
+                </div>
+              ))}
+            </div>
+          </section>
         </div>
+
       </div>
     </div>
   );

@@ -27,6 +27,7 @@
   "dependencies": {
     "dexie": "^4.2.1",
     "dexie-react-hooks": "^4.2.0",
+    "framer-motion": "^12.34.0",
     "lucide-react": "^0.294.0",
     "music-metadata": "^11.10.3",
     "pg": "^8.16.3",

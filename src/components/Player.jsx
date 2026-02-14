@@ -9,15 +9,16 @@ import {
   Repeat,
   Shuffle,
   ListMusic,
-  ChevronUp,
   ChevronDown,
   Plus,
   Music,
+  Maximize2
 } from "lucide-react";
 import { usePlayer } from "../context/PlayerContext";
 import Queue from "./Queue";
 import { formatDuration } from "../data/utils";
 import AddtoPlayList from "./AddtoPlayList";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Player = () => {
   const {
@@ -48,105 +49,81 @@ const Player = () => {
 
   if (!currentTrack) return null;
 
-  const bgImage =
-    currentTrack.images?.[0]?.url || currentTrack.album?.images?.[0]?.url;
-  const smallImage =
-    currentTrack.images?.[2]?.url ||
-    currentTrack.images?.[1]?.url ||
-    currentTrack.album?.images?.[1]?.url;
+  const bgImage = currentTrack.images?.[0]?.url || currentTrack.album?.images?.[0]?.url;
+  const smallImage = currentTrack.images?.[2]?.url || currentTrack.album?.images?.[1]?.url;
 
   return (
     <>
-      <AddtoPlayList songToAction={songToAction} setSongToAction={setSongToAction} />
+      <AnimatePresence>
+        {songToAction && <AddtoPlayList songToAction={songToAction} setSongToAction={setSongToAction} />}
+      </AnimatePresence>
       <Queue isOpen={isQueueOpen} onClose={() => setIsQueueOpen(false)} />
 
-      {/* --- ULTRA-MINIMAL EXPANDED PLAYER --- */}
+      {/* --- 1. EXPANDED PLAYER (SHARP EDGES & BLUR) --- */}
       <div
-        className={`fixed inset-0 z-[70] transition-transform duration-500 cubic-bezier(0.32, 0.72, 0, 1) ${
+        className={`fixed inset-0 z-[100] transition-transform duration-500 cubic-bezier(0.32, 0.72, 0, 1) ${
           isExpanded ? "translate-y-0" : "translate-y-full"
-        } bg-[#121212] flex flex-col`}
+        } bg-[#0A0A0A] flex flex-col`}
       >
-        {/* Background Layer */}
+        {/* Background Blur */}
         <div className="absolute inset-0 z-0 overflow-hidden">
           {bgImage && (
             <img
               src={bgImage}
               alt=""
-              className="w-full h-full object-cover blur-3xl opacity-40 scale-125"
+              className="w-full h-full object-cover blur-[100px] opacity-30 scale-150 grayscale-[20%]"
             />
           )}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#121212]/30 to-[#121212]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0A0A0A]/40 to-[#0A0A0A]" />
         </div>
 
-        {/* Header (Top) */}
-        <div className="relative z-10 flex justify-between items-center p-6 md:p-8 pt-10">
-          <button
-            onClick={() => setIsExpanded(false)}
-            className="text-white/60 hover:text-white transition-colors"
-          >
-            <ChevronDown size={28} strokeWidth={1.5} />
+        {/* Header */}
+        <div className="relative z-10 flex justify-between items-center p-6 md:p-10">
+          <button onClick={() => setIsExpanded(false)} className="p-3 bg-white/5 border border-white/10 text-white/60 hover:text-white transition-all">
+            <ChevronDown size={28} />
           </button>
-          <span className="text-[10px] font-bold tracking-[0.2em] text-white/40 uppercase">
-            Now Playing
-          </span>
-          <button
-            onClick={() => setIsQueueOpen(true)}
-            className="text-white/60 hover:text-white transition-colors"
-          >
-            <ListMusic size={22} strokeWidth={1.5} />
+          <span className="text-[10px] font-black tracking-[0.4em] text-white/40 uppercase">Now Playing</span>
+          <button onClick={() => setIsQueueOpen(true)} className="p-3 bg-white/5 border border-white/10 text-white/60 hover:text-white transition-all">
+            <ListMusic size={22} />
           </button>
         </div>
 
-        {/* Center: Album Art */}
+        {/* Center Canvas - SHARP ART */}
         <div className="relative z-10 flex-1 flex items-center justify-center min-h-0 pb-32 px-8">
-          <div className="relative w-full aspect-square max-w-[400px] shadow-[0_30px_60px_rgba(0,0,0,0.5)] rounded-xl overflow-hidden">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={isExpanded ? { opacity: 1 } : {}}
+            className="relative w-full aspect-square max-w-[420px] shadow-2xl bg-surface border-4 border-white/10"
+          >
             {bgImage ? (
-              <img
-                src={bgImage}
-                alt={currentTrack.title}
-                className="w-full h-full object-cover"
-              />
+              <img src={bgImage} className="w-full h-full object-cover" alt="" />
             ) : (
-              <div className="w-full h-full bg-zinc-800 flex items-center justify-center">
-                <Music size={80} className="text-white/20" />
-              </div>
+              <div className="w-full h-full flex items-center justify-center text-white/10"><Music size={80} /></div>
             )}
-          </div>
+          </motion.div>
         </div>
 
-        {/* Bottom Section: Info & Progress ONLY */}
-        <div className="absolute bottom-0 left-0 right-0 z-20 p-8 pb-12 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
-          <div className="max-w-2xl mx-auto w-full flex flex-col gap-4">
-            {/* Title & Artist */}
-            <div className="flex flex-col items-start">
-              <h2 className="text-3xl md:text-4xl font-bold text-white leading-tight">
-                {currentTrack.title}
-              </h2>
-              <p className="text-lg md:text-xl text-white/60 mt-1 font-medium">
-                {currentTrack.artists.map((a) => a.name).join(", ")}
+        {/* Bottom Info & Progress */}
+        <div className="absolute bottom-0 left-0 right-0 z-20 p-10 pb-16 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/80 to-transparent">
+          <div className="max-w-3xl mx-auto w-full space-y-8">
+            <div className="flex flex-col items-start space-y-2">
+              <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase leading-none">{currentTrack.title}</h2>
+              <p className="text-sm md:text-lg font-bold text-primary uppercase tracking-widest">
+                {currentTrack.artists.map((a) => a.name).join(" / ")}
               </p>
             </div>
 
             {/* Scrubber */}
-            <div className="group w-full space-y-2 mt-4">
-              <div
-                className="h-1.5 bg-white/10 rounded-full cursor-pointer relative py-2 -my-2 flex items-center"
-                onClick={(e) => {
+            <div className="space-y-4">
+              <div className="h-1 bg-white/10 cursor-pointer relative flex items-center" onClick={(e) => {
                   const rect = e.currentTarget.getBoundingClientRect();
                   seek(((e.clientX - rect.left) / rect.width) * 100);
-                }}
-              >
-                <div className="absolute inset-x-0 h-1.5 bg-white/20 rounded-full pointer-events-none" />
-                <div
-                  className="h-1.5 bg-white rounded-full transition-all duration-100 relative pointer-events-none"
-                  style={{ width: `${progress}%` }}
-                >
-                  {/* Small dot at end of bar */}
-                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg" />
+              }}>
+                <div className="h-full bg-primary relative" style={{ width: `${progress}%` }}>
+                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white shadow-xl" />
                 </div>
               </div>
-
-              <div className="flex justify-between text-xs font-medium text-white/50 font-mono tracking-wide">
+              <div className="flex justify-between text-[10px] font-black text-white/30 font-mono tracking-[0.2em] uppercase">
                 <span>{formatDuration(getCurrentTime())}</span>
                 <span>{formatDuration(currentTrack.duration)}</span>
               </div>
@@ -155,165 +132,86 @@ const Player = () => {
         </div>
       </div>
 
-      {/* --- MINIMIZED PLAYER (Unchanged - Needed for controls when collapsed) --- */}
+      {/* --- 2. MINIMIZED PLAYER (SHARP & COMPACT) --- */}
       <div
-        className="fixed bottom-0 left-0 right-0 h-20 md:h-24 bg-[#121212] border-t border-white/5 flex items-center px-4 md:px-6 gap-4 z-[60] transition-all cursor-pointer md:cursor-default group"
+        className="w-full h-[80px] bg-surface/95 backdrop-blur-md border border-slate-100 dark:border-white/10 shadow-lg flex items-center px-6 transition-all group relative cursor-pointer"
         onClick={(e) => {
-          if (window.innerWidth < 768 && !e.target.closest("button"))
+          if (!e.target.closest("button") && !e.target.closest(".volume-slider") && !e.target.closest(".seek-bar"))
             setIsExpanded(true);
         }}
       >
-        <div className="absolute -top-[2px] left-0 right-0 h-[2px] bg-transparent group-hover:h-[4px] transition-all md:hidden">
-          <div className="h-full bg-white" style={{ width: `${progress}%` }} />
+        {/* Progress Header */}
+        <div 
+          className="seek-bar absolute top-0 left-0 right-0 h-[3px] cursor-pointer group/seek overflow-hidden z-20"
+          onClick={(e) => {
+              e.stopPropagation();
+              const rect = e.currentTarget.getBoundingClientRect();
+              seek(((e.clientX - rect.left) / rect.width) * 100);
+          }}
+        >
+          <div className="absolute inset-0 bg-slate-200 dark:bg-white/5" />
+          <div className="h-full bg-primary transition-all duration-300 relative" style={{ width: `${progress}%` }} />
         </div>
 
-        <div className="flex items-center gap-3 md:gap-4 w-1/2 md:w-1/4 min-w-0">
-          <div className="w-12 h-12 md:w-14 md:h-14 rounded bg-white/5 flex-shrink-0 overflow-hidden relative group/art">
-            {smallImage ? (
-              <>
-                <img
-                  src={smallImage}
-                  alt=""
-                  className="w-full h-full object-cover"
-                />
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsExpanded(true);
-                  }}
-                  className="absolute inset-0 bg-black/40 hidden md:flex items-center justify-center opacity-0 group-hover/art:opacity-100 transition-opacity"
-                >
-                  <ChevronUp size={24} className="text-white" />
-                </button>
-              </>
-            ) : (
-              <Music className="w-1/2 h-1/2 m-auto text-white/20" />
-            )}
+        {/* Info & Art */}
+        <div className="flex items-center gap-4 flex-1 min-w-0">
+          <div className="h-12 w-12 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 overflow-hidden shrink-0">
+             {smallImage ? (
+               <img src={smallImage} className={`w-full h-full object-cover ${isPlaying ? 'grayscale-0' : 'grayscale-[40%]'}`} alt="" />
+             ) : (
+               <div className="w-full h-full flex items-center justify-center text-text-muted/20"><Music size={18}/></div>
+             )}
           </div>
-          <div className="min-w-0 flex-1">
-            <h4 className="text-sm font-medium text-white truncate">
-              {currentTrack.title}
-            </h4>
-            <p className="text-xs text-white/60 truncate">
-              {currentTrack.artists.map((a) => a.name).join(", ")}
+          <div className="flex flex-col justify-center min-w-0">
+            <h4 className="text-sm font-bold text-text-main truncate uppercase tracking-tight leading-none">{currentTrack.title}</h4>
+            <p className="text-[10px] text-text-muted font-black uppercase tracking-widest truncate mt-1">
+               {currentTrack.artists.map((a) => a.name).join(" / ")}
             </p>
           </div>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setSongToAction(currentTrack.id);
-            }}
-            className="hidden md:block text-white/40 hover:text-white p-2"
-          >
-            <Plus size={18} />
+          {/* Add to Playlist - Restored */}
+          <button onClick={(e) => { e.stopPropagation(); setSongToAction(currentTrack.id); }} className="hidden md:flex text-text-muted hover:text-primary p-2">
+            <Plus size={18} strokeWidth={3} />
           </button>
         </div>
 
-        <div className="hidden md:flex flex-1 flex-col items-center gap-2 max-w-xl">
-          <div className="flex items-center gap-6">
-            <button
-              onClick={toggleShuffle}
-              className={`text-sm ${
-                isShuffling
-                  ? "text-purple-electric"
-                  : "text-white/40 hover:text-white"
-              }`}
-            >
-              <Shuffle size={16} />
-            </button>
-            <button
-              onClick={prevTrack}
-              className="text-white hover:text-white/70"
-            >
-              <SkipBack size={20} fill="currentColor" />
-            </button>
-            <button
-              onClick={togglePlay}
-              className="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 transition-transform"
-            >
-              {isPlaying ? (
-                <Pause size={16} fill="currentColor" />
-              ) : (
-                <Play size={16} fill="currentColor" className="ml-0.5" />
-              )}
-            </button>
-            <button
-              onClick={nextTrack}
-              className="text-white hover:text-white/70"
-            >
-              <SkipForward size={20} fill="currentColor" />
-            </button>
-            <button
-              onClick={toggleRepeat}
-              className={`text-sm ${
-                isRepeating
-                  ? "text-purple-electric"
-                  : "text-white/40 hover:text-white"
-              }`}
-            >
-              {isRepeating ? <Repeat1 size={16} /> : <Repeat size={16} />}
-            </button>
-          </div>
-          <div className="w-full flex items-center gap-3 text-xs font-medium text-white/40 font-mono">
-            <span>{formatDuration(getCurrentTime())}</span>
-            <div
-              className="flex-1 h-1 bg-white/10 rounded-full cursor-pointer group/scrub"
-              onClick={(e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                seek(((e.clientX - rect.left) / rect.width) * 100);
-              }}
-            >
-              <div
-                className="h-full bg-white rounded-full relative group-hover/scrub:bg-purple-electric transition-colors"
-                style={{ width: `${progress}%` }}
-              ></div>
-            </div>
-            <span>{formatDuration(currentTrack.duration)}</span>
-          </div>
+        {/* TRANSPORT & RESTORED MODES */}
+        <div className="hidden md:flex items-center gap-6 absolute left-1/2 -translate-x-1/2">
+           <button onClick={(e) => { e.stopPropagation(); toggleShuffle(); }} className={`transition-colors ${isShuffling ? "text-primary" : "text-text-muted hover:text-text-main"}`}>
+             <Shuffle size={16} />
+           </button>
+
+           <button onClick={(e) => { e.stopPropagation(); prevTrack(); }} className="text-text-muted hover:text-primary transition-colors">
+              <SkipBack size={20} fill="currentColor" strokeWidth={0} />
+           </button>
+
+           <button onClick={(e) => { e.stopPropagation(); togglePlay(); }} className="w-11 h-11 bg-text-main text-bgMain flex items-center justify-center hover:bg-primary hover:text-white transition-all">
+              {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" className="ml-0.5" /> }
+           </button>
+
+           <button onClick={(e) => { e.stopPropagation(); nextTrack(); }} className="text-text-muted hover:text-primary transition-colors">
+              <SkipForward size={20} fill="currentColor" strokeWidth={0} />
+           </button>
+
+           <button onClick={(e) => { e.stopPropagation(); toggleRepeat(); }} className={`transition-colors ${isRepeating ? "text-primary" : "text-text-muted hover:text-text-main"}`}>
+             {isRepeating ? <Repeat1 size={16} /> : <Repeat size={16} />}
+           </button>
         </div>
 
-        <div className="md:hidden flex items-center gap-4 ml-auto pr-2">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              togglePlay();
-            }}
-            className="text-white"
-          >
-            {isPlaying ? (
-              <Pause size={24} fill="currentColor" />
-            ) : (
-              <Play size={24} fill="currentColor" />
-            )}
-          </button>
-        </div>
-
-        <div className="hidden md:flex items-center gap-4 w-1/4 justify-end">
-          <button
-            onClick={() => setIsQueueOpen(!isQueueOpen)}
-            className={
-              isQueueOpen
-                ? "text-purple-electric"
-                : "text-white/60 hover:text-white"
-            }
-          >
-            <ListMusic size={18} />
-          </button>
-          <div className="flex items-center gap-2 w-24 group/vol">
-            <Volume2 size={16} className="text-white/60" />
-            <div
-              className="flex-1 h-1 bg-white/10 rounded-full cursor-pointer overflow-hidden"
-              onClick={(e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                setVolume(((e.clientX - rect.left) / rect.width) * 100);
-              }}
-            >
-              <div
-                className="h-full bg-white/70 group-hover/vol:bg-purple-electric"
-                style={{ width: `${volume}%` }}
-              />
-            </div>
-          </div>
+        {/* Utilities */}
+        <div className="flex items-center gap-6 justify-end">
+           <div className="hidden lg:flex items-center gap-3 w-28 group/vol volume-slider">
+             <Volume2 size={16} className="text-text-muted" />
+             <div className="flex-1 h-1 bg-slate-200 dark:bg-white/5 cursor-pointer overflow-hidden" onClick={(e) => {
+                 e.stopPropagation();
+                 const rect = e.currentTarget.getBoundingClientRect();
+                 setVolume(((e.clientX - rect.left) / rect.width) * 100);
+               }}>
+               <div className="h-full bg-text-muted group-hover/vol:bg-primary transition-colors" style={{ width: `${volume}%` }} />
+             </div>
+           </div>
+           <button onClick={(e) => { e.stopPropagation(); setIsQueueOpen(!isQueueOpen); }} className={`p-2 border transition-all ${isQueueOpen ? "border-primary text-primary bg-primary/5" : "border-transparent text-text-muted hover:text-text-main"}`}>
+             <ListMusic size={18} />
+           </button>
         </div>
       </div>
     </>
