@@ -14,3 +14,6 @@ export function formatDuration(ms) {
   // .padStart(2, '0') ensures we get "05" instead of "5"
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
+
+export const localUrl = "http://127.0.0.1:3000";
+export const remoteUrl = "https://spotify-clone-backend-1.onrender.com";

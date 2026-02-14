@@ -60,6 +60,7 @@ export async function addFullSong(track: any) {
         is_spotify: track.is_spotify,
         popularity: track.popularity,
         is_liked: false,
+        is_backed_up: false,
       });
     }
   );

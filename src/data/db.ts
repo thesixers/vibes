@@ -19,6 +19,7 @@ export interface Song {
     is_spotify: boolean;
     popularity: number;
     is_liked: boolean;
+    is_backed_up: boolean;
 }
 
 export interface Playlist {
@@ -59,7 +60,7 @@ class VibeDB extends Dexie {
         this.version(1).stores({
             artists: "id, name, genres", 
             albums: "id, title, total_tracks, release_date, type", 
-            songs: "id, title, file_path, duration, release_date, track_number, *artist_ids, is_spotify, popularity, album_id", 
+            songs: "id, title, file_path, duration, release_date, track_number, *artist_ids, is_spotify, popularity, album_id, is_liked, is_backed_up", 
             playlists: "++id, title, description, cover_image, *songs, created_at, updated_at",
         }); 
     }

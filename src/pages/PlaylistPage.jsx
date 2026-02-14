@@ -9,10 +9,11 @@ import {
   Music,
   Trash2,
   ListMusic,
+  UploadCloud,
 } from "lucide-react";
 import { usePlayer } from "../context/PlayerContext";
 import { db } from "../data/db";
-import { formatDuration } from "../data/utils";
+import { formatDuration, localUrl } from "../data/utils";
 import Loading from "../components/Loading";
 import AddtoPlayList from "../components/AddtoPlayList";
 import { useSync } from "../context/SyncContext";
@@ -151,9 +152,44 @@ const CollectionPage = () => {
   };
 
   const handlePlayCollection = (index = 0) => {
-    if (currentTrack && currentTrack.id === collectionData.songs[index].id) return togglePlay();
+    if (currentTrack && currentTrack.id === collectionData.songs[index].id)
+      return togglePlay();
     if (collectionData?.songs?.length > 0) {
       playPlaylist(collectionData.songs, index);
+    }
+  };
+
+  const handleTrackBackUp = async (track) => {
+    if (!track || track.is_backed_up) return;
+
+    const { buffer, contentType, fileName } =
+      await window.vibesApp.getTrackBuffer(track.file_path);
+
+    const blob = new Blob([buffer], { type: contentType });
+
+    const formData = new FormData();
+
+    formData.append("file", blob, fileName);
+    formData.append(
+      "metadata",
+      JSON.stringify({ ...track, file_path: null, fileName })
+    );
+
+    try {
+      const response = await fetch(`${localUrl}/api/tracks/upload`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert(`Track backed up successfully! Backup ID: ${data.backupId}`);
+        await db.songs.update(track.id, { is_backed_up: true });
+      } else {
+        alert("Failed to back up track.");
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -164,7 +200,7 @@ const CollectionPage = () => {
   }, [activeMenu]);
 
   // Add this inside your CollectionPage component, before the return
-  if (!collectionData) return <Loading />
+  if (!collectionData) return <Loading />;
 
   return (
     <div className="flex-1 overflow-y-auto custom-scrollbar bg-gradient-to-b from-purple-900/20 to-black pb-32">
@@ -179,7 +215,10 @@ const CollectionPage = () => {
         }
       `}</style>
 
-      <AddtoPlayList songToAction={songToAction} setSongToAction={setSongToAction} />
+      <AddtoPlayList
+        songToAction={songToAction}
+        setSongToAction={setSongToAction}
+      />
 
       <div className="p-6 md:p-8 space-y-6">
         {/* BACK BUTTON */}
@@ -378,6 +417,15 @@ const CollectionPage = () => {
                         >
                           <ListMusic size={16} /> Add to Playlist
                         </button>
+                        <button
+                          onClick={() => {
+                            handleTrackBackUp(track);
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white hover:bg-white/10 transition-colors text-left"
+                        >
+                          <UploadCloud size={16} /> Backup
+                        </button>
+                        <div className="h-[1px] bg-white/5 my-1" />
                         <button
                           onClick={() => handleDelete(track.id)}
                           className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 transition-colors text-left"
