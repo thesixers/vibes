@@ -1,4 +1,5 @@
 import React from "react";
+import ReactDOM from "react-dom";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "../data/db";
 import { useSync } from "../context/SyncContext";
@@ -26,13 +27,13 @@ export default function AddtoPlayList({ songToAction, setSongToAction }) {
   };
 
   if (!songToAction) return;
-  
-  return (
+
+  return ReactDOM.createPortal(
     <>
       {showPlaylistForm && <PlaylistForm />}
 
       {/* BACKDROP */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -40,7 +41,7 @@ export default function AddtoPlayList({ songToAction, setSongToAction }) {
         onClick={() => setSongToAction(null)}
       >
         {/* MODAL CARD */}
-        <motion.div 
+        <motion.div
           initial={{ scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -51,10 +52,12 @@ export default function AddtoPlayList({ songToAction, setSongToAction }) {
           {/* Header */}
           <div className="p-5 border-b border-slate-100 dark:border-white/5 flex justify-between items-center bg-slate-50/50 dark:bg-white/5">
             <div className="flex items-center gap-2">
-                <div className="p-2 rounded-full bg-primary/10 text-primary">
-                    <ListMusic size={18} />
-                </div>
-                <h3 className="text-lg font-bold text-text-main">Add to Playlist</h3>
+              <div className="p-2 rounded-full bg-primary/10 text-primary">
+                <ListMusic size={18} />
+              </div>
+              <h3 className="text-lg font-bold text-text-main">
+                Add to Playlist
+              </h3>
             </div>
             <button
               onClick={() => setSongToAction(null)}
@@ -67,51 +70,59 @@ export default function AddtoPlayList({ songToAction, setSongToAction }) {
           {/* Playlist List */}
           <div className="max-h-80 overflow-y-auto custom-scrollbar p-3 space-y-1">
             {allPlaylists.length === 0 ? (
-                <div className="p-8 text-center text-text-muted flex flex-col items-center gap-2">
-                    <Music size={32} className="opacity-20" />
-                    <p className="text-sm">No playlists found.</p>
-                </div>
+              <div className="p-8 text-center text-text-muted flex flex-col items-center gap-2">
+                <Music size={32} className="opacity-20" />
+                <p className="text-sm">No playlists found.</p>
+              </div>
             ) : (
-                allPlaylists.map((pl) => {
-                  const isIncluded = pl.song_ids?.includes(songToAction);
-                  
-                  return (
-                    <button
-                        key={pl.id}
-                        onClick={() => handleTogglePlaylist(pl)}
-                        className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all text-left group border ${
-                            isIncluded 
-                            ? "bg-primary/5 border-primary/20" 
-                            : "hover:bg-slate-50 dark:hover:bg-white/5 border-transparent"
-                        }`}
+              allPlaylists.map((pl) => {
+                const isIncluded = pl.song_ids?.includes(songToAction);
+
+                return (
+                  <button
+                    key={pl.id}
+                    onClick={() => handleTogglePlaylist(pl)}
+                    className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all text-left group border ${
+                      isIncluded
+                        ? "bg-primary/5 border-primary/20"
+                        : "hover:bg-slate-50 dark:hover:bg-white/5 border-transparent"
+                    }`}
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-white/10 overflow-hidden flex-shrink-0 relative shadow-sm">
+                      {pl.cover_image?.url ? (
+                        <img
+                          src={pl.cover_image.url}
+                          className="w-full h-full object-cover"
+                          alt={pl.title}
+                        />
+                      ) : (
+                        <Music className="w-5 h-5 m-auto absolute inset-0 text-text-muted" />
+                      )}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className={`font-bold truncate ${isIncluded ? "text-primary" : "text-text-main"}`}
+                      >
+                        {pl.title}
+                      </p>
+                      <p className="text-xs text-text-muted font-medium">
+                        {pl.song_ids ? pl.song_ids.length : 0} tracks
+                      </p>
+                    </div>
+
+                    <div
+                      className={`w-6 h-6 rounded-full border flex items-center justify-center transition-all ${
+                        isIncluded
+                          ? "bg-primary border-primary text-white scale-100"
+                          : "border-slate-300 dark:border-white/20 text-transparent scale-90 group-hover:border-primary/50"
+                      }`}
                     >
-                        <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-white/10 overflow-hidden flex-shrink-0 relative shadow-sm">
-                        {pl.cover_image?.url ? (
-                            <img src={pl.cover_image.url} className="w-full h-full object-cover" alt={pl.title} />
-                        ) : (
-                            <Music className="w-5 h-5 m-auto absolute inset-0 text-text-muted" />
-                        )}
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                            <p className={`font-bold truncate ${isIncluded ? "text-primary" : "text-text-main"}`}>
-                                {pl.title}
-                            </p>
-                            <p className="text-xs text-text-muted font-medium">
-                                {pl.song_ids ? pl.song_ids.length : 0} tracks
-                            </p>
-                        </div>
-
-                        <div className={`w-6 h-6 rounded-full border flex items-center justify-center transition-all ${
-                            isIncluded 
-                             ? "bg-primary border-primary text-white scale-100" 
-                             : "border-slate-300 dark:border-white/20 text-transparent scale-90 group-hover:border-primary/50"
-                        }`}>
-                            <Check size={14} strokeWidth={3} />
-                        </div>
-                    </button>
-                  );
-                })
+                      <Check size={14} strokeWidth={3} />
+                    </div>
+                  </button>
+                );
+              })
             )}
           </div>
 
@@ -127,6 +138,7 @@ export default function AddtoPlayList({ songToAction, setSongToAction }) {
           </div>
         </motion.div>
       </motion.div>
-    </>
+    </>,
+    document.body,
   );
 }

@@ -59,25 +59,19 @@ const Player = () => {
       </AnimatePresence>
       <Queue isOpen={isQueueOpen} onClose={() => setIsQueueOpen(false)} />
 
-      {/* --- 1. EXPANDED PLAYER (SHARP EDGES & BLUR) --- */}
+      {/* --- 1. EXPANDED PLAYER --- */}
       <div
         className={`fixed inset-0 z-[100] transition-transform duration-500 cubic-bezier(0.32, 0.72, 0, 1) ${
           isExpanded ? "translate-y-0" : "translate-y-full"
         } bg-[#0A0A0A] flex flex-col`}
       >
-        {/* Background Blur */}
         <div className="absolute inset-0 z-0 overflow-hidden">
           {bgImage && (
-            <img
-              src={bgImage}
-              alt=""
-              className="w-full h-full object-cover blur-[100px] opacity-30 scale-150 grayscale-[20%]"
-            />
+            <img src={bgImage} alt="" className="w-full h-full object-cover blur-[100px] opacity-30 scale-150 grayscale-[20%]" />
           )}
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0A0A0A]/40 to-[#0A0A0A]" />
         </div>
 
-        {/* Header */}
         <div className="relative z-10 flex justify-between items-center p-6 md:p-10">
           <button onClick={() => setIsExpanded(false)} className="p-3 bg-white/5 border border-white/10 text-white/60 hover:text-white transition-all">
             <ChevronDown size={28} />
@@ -88,22 +82,16 @@ const Player = () => {
           </button>
         </div>
 
-        {/* Center Canvas - SHARP ART */}
         <div className="relative z-10 flex-1 flex items-center justify-center min-h-0 pb-32 px-8">
           <motion.div 
             initial={{ opacity: 0 }}
             animate={isExpanded ? { opacity: 1 } : {}}
             className="relative w-full aspect-square max-w-[420px] shadow-2xl bg-surface border-4 border-white/10"
           >
-            {bgImage ? (
-              <img src={bgImage} className="w-full h-full object-cover" alt="" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-white/10"><Music size={80} /></div>
-            )}
+            {bgImage ? <img src={bgImage} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full flex items-center justify-center text-white/10"><Music size={80} /></div>}
           </motion.div>
         </div>
 
-        {/* Bottom Info & Progress */}
         <div className="absolute bottom-0 left-0 right-0 z-20 p-10 pb-16 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/80 to-transparent">
           <div className="max-w-3xl mx-auto w-full space-y-8">
             <div className="flex flex-col items-start space-y-2">
@@ -112,8 +100,6 @@ const Player = () => {
                 {currentTrack.artists.map((a) => a.name).join(" / ")}
               </p>
             </div>
-
-            {/* Scrubber */}
             <div className="space-y-4">
               <div className="h-1 bg-white/10 cursor-pointer relative flex items-center" onClick={(e) => {
                   const rect = e.currentTarget.getBoundingClientRect();
@@ -132,7 +118,7 @@ const Player = () => {
         </div>
       </div>
 
-      {/* --- 2. MINIMIZED PLAYER (SHARP & COMPACT) --- */}
+      {/* --- 2. MINIMIZED PLAYER (DYNAMIC FLEX LAYOUT) --- */}
       <div
         className="w-full h-[80px] bg-surface/95 backdrop-blur-md border border-slate-100 dark:border-white/10 shadow-lg flex items-center px-6 transition-all group relative cursor-pointer"
         onClick={(e) => {
@@ -140,7 +126,6 @@ const Player = () => {
             setIsExpanded(true);
         }}
       >
-        {/* Progress Header */}
         <div 
           className="seek-bar absolute top-0 left-0 right-0 h-[3px] cursor-pointer group/seek overflow-hidden z-20"
           onClick={(e) => {
@@ -153,8 +138,8 @@ const Player = () => {
           <div className="h-full bg-primary transition-all duration-300 relative" style={{ width: `${progress}%` }} />
         </div>
 
-        {/* Info & Art */}
-        <div className="flex items-center gap-4 flex-1 min-w-0">
+        {/* 1. LEFT COLUMN: Track Info (Flexible/Shrinkable) */}
+        <div className="flex items-center gap-4 flex-[1.5] min-w-0 pr-4">
           <div className="h-12 w-12 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 overflow-hidden shrink-0">
              {smallImage ? (
                <img src={smallImage} className={`w-full h-full object-cover ${isPlaying ? 'grayscale-0' : 'grayscale-[40%]'}`} alt="" />
@@ -168,38 +153,45 @@ const Player = () => {
                {currentTrack.artists.map((a) => a.name).join(" / ")}
             </p>
           </div>
-          {/* Add to Playlist - Restored */}
-          <button onClick={(e) => { e.stopPropagation(); setSongToAction(currentTrack.id); }} className="hidden md:flex text-text-muted hover:text-primary p-2">
+          <button onClick={(e) => { e.stopPropagation(); setSongToAction(currentTrack.id); }} className="hidden lg:flex text-text-muted hover:text-primary p-2 shrink-0">
             <Plus size={18} strokeWidth={3} />
           </button>
         </div>
 
-        {/* TRANSPORT & RESTORED MODES */}
-        <div className="hidden md:flex items-center gap-6 absolute left-1/2 -translate-x-1/2">
-           <button onClick={(e) => { e.stopPropagation(); toggleShuffle(); }} className={`transition-colors ${isShuffling ? "text-primary" : "text-text-muted hover:text-text-main"}`}>
+        {/* 2. MIDDLE COLUMN: Transport (Fixed/Centered) */}
+        <div className="hidden md:flex items-center justify-center gap-8 flex-1 shrink-0">
+           <button onClick={(e) => { e.stopPropagation(); toggleShuffle(); }} className={`transition-colors shrink-0 ${isShuffling ? "text-primary" : "text-text-muted hover:text-text-main"}`}>
              <Shuffle size={16} />
            </button>
 
-           <button onClick={(e) => { e.stopPropagation(); prevTrack(); }} className="text-text-muted hover:text-primary transition-colors">
+           <button onClick={(e) => { e.stopPropagation(); prevTrack(); }} className="text-text-muted hover:text-primary transition-colors shrink-0">
               <SkipBack size={20} fill="currentColor" strokeWidth={0} />
            </button>
 
-           <button onClick={(e) => { e.stopPropagation(); togglePlay(); }} className="w-11 h-11 bg-text-main text-bgMain flex items-center justify-center hover:bg-primary hover:text-white transition-all">
+           <button onClick={(e) => { e.stopPropagation(); togglePlay(); }} className="w-11 h-11 bg-text-main text-bgMain flex items-center justify-center hover:bg-primary hover:text-white transition-all shrink-0">
               {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" className="ml-0.5" /> }
            </button>
 
-           <button onClick={(e) => { e.stopPropagation(); nextTrack(); }} className="text-text-muted hover:text-primary transition-colors">
+           <button onClick={(e) => { e.stopPropagation(); nextTrack(); }} className="text-text-muted hover:text-primary transition-colors shrink-0">
               <SkipForward size={20} fill="currentColor" strokeWidth={0} />
            </button>
 
-           <button onClick={(e) => { e.stopPropagation(); toggleRepeat(); }} className={`transition-colors ${isRepeating ? "text-primary" : "text-text-muted hover:text-text-main"}`}>
+           <button onClick={(e) => { e.stopPropagation(); toggleRepeat(); }} className={`transition-colors shrink-0 ${isRepeating ? "text-primary" : "text-text-muted hover:text-text-main"}`}>
              {isRepeating ? <Repeat1 size={16} /> : <Repeat size={16} />}
            </button>
         </div>
 
-        {/* Utilities */}
-        <div className="flex items-center gap-6 justify-end">
-           <div className="hidden lg:flex items-center gap-3 w-28 group/vol volume-slider">
+        {/* 3. RIGHT COLUMN: Utilities (Static) */}
+        <div className="flex items-center gap-6 flex-[1.5] justify-end pl-4">
+           {/* Mobile Play Button */}
+           <button 
+             onClick={(e) => { e.stopPropagation(); togglePlay(); }}
+             className="md:hidden w-10 h-10 bg-primary text-white flex items-center justify-center shadow-md active:scale-90 transition-all"
+           >
+             {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" className="ml-0.5" />}
+           </button>
+
+           <div className="hidden lg:flex items-center gap-3 w-28 group/vol volume-slider shrink-0">
              <Volume2 size={16} className="text-text-muted" />
              <div className="flex-1 h-1 bg-slate-200 dark:bg-white/5 cursor-pointer overflow-hidden" onClick={(e) => {
                  e.stopPropagation();
@@ -209,7 +201,8 @@ const Player = () => {
                <div className="h-full bg-text-muted group-hover/vol:bg-primary transition-colors" style={{ width: `${volume}%` }} />
              </div>
            </div>
-           <button onClick={(e) => { e.stopPropagation(); setIsQueueOpen(!isQueueOpen); }} className={`p-2 border transition-all ${isQueueOpen ? "border-primary text-primary bg-primary/5" : "border-transparent text-text-muted hover:text-text-main"}`}>
+
+           <button onClick={(e) => { e.stopPropagation(); setIsQueueOpen(!isQueueOpen); }} className={`hidden md:flex p-2 border transition-all shrink-0 ${isQueueOpen ? "border-primary text-primary bg-primary/5" : "border-transparent text-text-muted hover:text-text-main"}`}>
              <ListMusic size={18} />
            </button>
         </div>
