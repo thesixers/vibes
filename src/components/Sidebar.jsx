@@ -12,18 +12,16 @@ import {
   ListMusic,
   Plus,
   Trash2,
-  X,
-  Check,
   RotateCcw,
-  Zap,
 } from "lucide-react";
 import { db } from "../data/db";
 import { useSync } from "../context/SyncContext";
 import ThemeToggle from "./ThemeToggle";
+import icon from "../assets/icon.png";
 
 const Sidebar = () => {
   const navigate = useNavigate();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [playlistDeleteID, setPlaylistDeleteID] = useState(null);
   const { handleSync, isSyncing } = useSync();
 
@@ -50,12 +48,13 @@ const Sidebar = () => {
       <div className={`flex items-center p-6 mb-4 ${isCollapsed ? "justify-center" : "justify-between"}`}>
         {!isCollapsed && (
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary to-orange-400 flex items-center justify-center text-white shadow-soft">
-              <Zap size={20} fill="currentColor" strokeWidth={0} />
+            <div className="w-9 h-9 rounded-xl overflow-hidden  from-primary  flex items-center justify-center text-white shadow-soft">
+              
+              <img src={icon} alt="Vibes Logo" className="w-full h-full" />
             </div>
             <div className="flex flex-col">
               <span className="font-black text-xl tracking-tight text-text-main leading-none">Vibes</span>
-              <span className="text-[9px] font-bold text-primary uppercase tracking-widest mt-1 opacity-80">Powered by GX</span>
+              <span className="text-[9px] font-bold text-primary uppercase tracking-widest mt-1 opacity-80"></span>
             </div>
           </div>
         )}

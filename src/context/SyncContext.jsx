@@ -3,7 +3,7 @@ import { db } from "../data/db.ts";
 import { addFullSong } from "../data/db_utils.ts";
 import stringSimilarity from "string-similarity";
 import useOnlineStatus from "../hooks/useOnlineStatus.jsx";
-import { localUrl } from "../data/utils.js";
+import { localUrl, remoteUrl } from "../data/utils.js";
 
 const SyncContext = createContext();
 
@@ -42,7 +42,7 @@ export const SyncProvider = ({ children }) => {
         if(!query) continue;
         try {
           const res = await fetch(
-            `${localUrl}/api/tracks/metadata?title=${encodeURIComponent(query)}`
+            `${remoteUrl}/api/tracks/metadata?title=${encodeURIComponent(query)}`
           );
   
           if (!res.ok) continue;
@@ -162,7 +162,7 @@ export const SyncProvider = ({ children }) => {
         JSON.stringify({ ...track, file_path: null, fileName })
       );
 
-      const res = await fetch(`${localUrl}/api/tracks/upload`, {
+      const res = await fetch(`${remoteUrl}/api/tracks/upload`, {
         method: "POST",
         body: formData,
       });

@@ -225,20 +225,33 @@ const CollectionPage = () => {
         />
       )}
 
-      <div className="flex-1 flex flex-col min-h-0 bg-bgMain pb-32">
+      {/* Mobile Menu Overlay */}
+      {activeMenu && (
+        <div
+          className="fixed inset-0 z-40 md:hidden"
+          onClick={() => setActiveMenu(null)}
+        />
+      )}
+
+      {/* FIX: Added 'overflow-y-auto' and 'h-full'. 
+         This makes this specific container the scrollable area, enabling sticky positioning.
+      */}
+      <div className="flex-1 flex flex-col min-h-0 bg-bgMain pb-32 overflow-x-hidden overflow-y-auto h-full relative">
         {/* HEADER */}
-        <div className="relative p-6 md:p-12 shrink-0 overflow-hidden">
-          <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary/5 to-transparent pointer-events-none" />
+        <div className="relative p-4 md:p-12 shrink-0 overflow-hidden">
+          <div className="absolute top-0 right-0 w-full md:w-1/2 h-full bg-gradient-to-b md:bg-gradient-to-l from-primary/10 to-transparent pointer-events-none" />
 
-          <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 items-center md:items-end relative z-10">
-            <button
-              onClick={() => navigate(-1)}
-              className="absolute -top-4 md:top-0 left-0 p-3 rounded-2xl bg-surface border border-slate-100 dark:border-white/5 text-text-muted hover:text-primary shadow-sm transition-all"
-            >
-              <ArrowLeft size={20} strokeWidth={3} />
-            </button>
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-end relative z-10">
+            <div className="w-full flex justify-between items-center md:absolute md:-top-4 md:left-0 md:w-auto">
+              <button
+                onClick={() => navigate(-1)}
+                className="p-3 rounded-2xl bg-surface border border-slate-100 dark:border-white/5 text-text-muted hover:text-primary shadow-sm transition-all"
+              >
+                <ArrowLeft size={20} strokeWidth={3} />
+              </button>
+            </div>
 
-            <div className="w-52 h-52 md:w-60 md:h-60 rounded-[2.5rem] overflow-hidden bg-surface shadow-soft border-4 border-white dark:border-white/5 shrink-0">
+            <div className="w-48 h-48 md:w-60 md:h-60 rounded-[2rem] md:rounded-[2.5rem] overflow-hidden bg-surface shadow-soft border-4 border-white dark:border-white/5 shrink-0">
               {collectionData.cover ? (
                 <img
                   src={collectionData.cover}
@@ -252,7 +265,7 @@ const CollectionPage = () => {
               )}
             </div>
 
-            <div className="flex-1 space-y-3 text-center md:text-left">
+            <div className="flex-1 space-y-3 text-center md:text-left w-full">
               <div className="flex items-center justify-center md:justify-start gap-2">
                 <Layers size={14} className="text-primary" />
                 <span className="text-xs font-black uppercase tracking-[0.2em] text-primary">
@@ -260,28 +273,29 @@ const CollectionPage = () => {
                 </span>
               </div>
 
-              <h1 className="text-5xl md:text-7xl font-black text-text-main tracking-tighter uppercase leading-[0.9]">
+              <h1 className="text-3xl sm:text-4xl md:text-7xl font-black text-text-main tracking-tighter uppercase leading-[0.9]">
                 {collectionData.title}
               </h1>
 
-              <p className="text-sm font-bold text-text-muted max-w-xl">
+              <p className="text-xs md:text-sm font-bold text-text-muted max-w-xl mx-auto md:mx-0 line-clamp-2">
                 {collectionData.description}
               </p>
 
               <div className="flex items-center justify-center md:justify-start gap-4 pt-4">
                 <button
                   onClick={() => playPlaylist(filteredSongs, 0)}
-                  className="h-16 px-10 bg-primary text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-soft hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
+                  className="h-14 md:h-16 px-8 md:px-10 bg-primary text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-soft hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
                 >
-                  <Play size={20} fill="currentColor" /> Play Collection
+                  <Play size={20} fill="currentColor" />
+                  <span>Play All</span>
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* SEARCH */}
-        <div className="px-6 md:px-12 py-4 sticky top-0 z-20 bg-bgMain/80 backdrop-blur-xl">
+        {/* SEARCH - Sticky works now because parent is overflow-y-auto */}
+        <div className="px-4 md:px-12 py-3 md:py-4 sticky top-0 z-30 bg-bgMain/90 backdrop-blur-xl border-b border-white/5 md:border-none">
           <div className="max-w-7xl mx-auto">
             <div className="relative w-full max-w-md group">
               <Search
@@ -294,7 +308,7 @@ const CollectionPage = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Find a track..."
-                className="w-full pl-12 pr-10 py-4 bg-surface border border-slate-100 dark:border-white/10 rounded-2xl text-sm font-bold text-text-main shadow-sm focus:outline-none focus:border-primary/40 transition-all"
+                className="w-full pl-12 pr-10 py-3 md:py-4 bg-surface border border-slate-100 dark:border-white/10 rounded-2xl text-sm font-bold text-text-main shadow-sm focus:outline-none focus:border-primary/40 transition-all"
               />
 
               {searchQuery && (
@@ -308,17 +322,17 @@ const CollectionPage = () => {
           </div>
         </div>
 
-        {/* TRACK LIST */}
-        <div className="flex-1 px-4 md:px-12 max-w-7xl mx-auto w-full">
-          <div className="grid grid-cols-[50px_1fr_100px_50px] md:grid-cols-[60px_2fr_1fr_100px_50px] gap-4 px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted border-b border-slate-100 dark:border-white/5 mb-4">
+        {/* TRACK LIST CONTAINER */}
+        <div className="flex-1 px-2 md:px-12 max-w-7xl mx-auto w-full">
+          <div className="hidden md:grid grid-cols-[60px_2fr_1fr_100px_50px] gap-4 px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted border-b border-slate-100 dark:border-white/5 mb-4">
             <div className="text-center">Status</div>
             <div>Song Information</div>
-            <div className="hidden md:block">Album</div>
+            <div>Album</div>
             <div className="text-right">Length</div>
             <div />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 pb-6">
             {filteredSongs.map((track, index) => {
               const isCurrent = currentTrack?.id === track.id;
 
@@ -329,14 +343,14 @@ const CollectionPage = () => {
               return (
                 <div
                   key={track.id}
-                  className={`group grid grid-cols-[50px_1fr_100px_50px] md:grid-cols-[60px_2fr_1fr_100px_50px] gap-4 px-6 py-4 items-center rounded-2xl transition-all cursor-pointer border ${
+                  className={`group relative flex items-center gap-3 md:grid md:grid-cols-[60px_2fr_1fr_100px_50px] md:gap-4 px-3 py-3 md:px-6 md:py-4 rounded-xl md:rounded-2xl transition-all cursor-pointer border ${
                     isCurrent
                       ? "bg-primary/5 border-primary/20 shadow-sm"
                       : "bg-surface border-transparent hover:border-slate-100 dark:hover:border-white/5 shadow-sm"
                   }`}
                   onClick={() => playPlaylist(filteredSongs, index)}
                 >
-                  <div className="flex justify-center text-sm font-bold text-text-muted">
+                  <div className="w-8 md:w-auto flex justify-center text-sm font-bold text-text-muted shrink-0">
                     {isCurrent && isPlaying ? (
                       <div className="flex gap-1 items-end h-4">
                         <div className="w-1 bg-primary animate-bounce h-full" />
@@ -350,8 +364,8 @@ const CollectionPage = () => {
                     )}
                   </div>
 
-                  <div className="flex items-center gap-4 min-w-0">
-                    <div className="w-12 h-12 rounded-xl bg-slate-100 overflow-hidden shrink-0 shadow-sm border border-white/50">
+                  <div className="flex-1 flex items-center gap-3 md:gap-4 min-w-0">
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-slate-100 overflow-hidden shrink-0 shadow-sm border border-white/50">
                       <img
                         src={
                           track.images?.[2]?.url ||
@@ -364,7 +378,7 @@ const CollectionPage = () => {
 
                     <div className="flex flex-col min-w-0">
                       <span
-                        className={`text-base font-bold truncate ${
+                        className={`text-sm md:text-base font-bold truncate ${
                           isCurrent ? "text-primary" : "text-text-main"
                         }`}
                       >
@@ -381,13 +395,19 @@ const CollectionPage = () => {
                     {track.album?.title || "Standalone"}
                   </div>
 
-                  <div className="text-xs font-mono font-bold text-text-muted text-right">
+                  <div className="hidden md:block text-xs font-mono font-bold text-text-muted text-right">
                     {formatDuration(track.duration)}
                   </div>
 
-                  <div className="relative flex items-center justify-center">
+                  {/* ACTION ICONS - Visible on Mobile */}
+                  <div className="relative flex items-center justify-end md:justify-center gap-1">
                     {backupStatus === "pending" && (
-                      <RotateCw className="animate-spin text-primary" />
+                      <div className="p-2">
+                        <RotateCw
+                          size={18}
+                          className="animate-spin text-primary"
+                        />
+                      </div>
                     )}
 
                     {backupStatus === "complete" && (
@@ -397,12 +417,16 @@ const CollectionPage = () => {
                     )}
 
                     {backupStatus === "failed" && (
-                      <div className="p-2" onClick={(e) => {
-                        e.stopPropagation();
-                        removeTrackFromBackUp(track.id);
-                        delete backupStatuses[track.id];
-                        setBackupStatuses({...backupStatuses});
-                      }}>
+                      <div
+                        className="p-2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeTrackFromBackUp(track.id);
+                          const newStatus = { ...backupStatuses };
+                          delete newStatus[track.id];
+                          setBackupStatuses(newStatus);
+                        }}
+                      >
                         <XIcon size={20} className="text-red-500" />
                       </div>
                     )}
@@ -434,7 +458,7 @@ const CollectionPage = () => {
 
                     {activeMenu === track.id && (
                       <div
-                        className="absolute right-full top-0 mr-3 w-52 bg-surface border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden p-1"
+                        className="absolute right-8 md:right-full top-0 mr-0 md:mr-3 w-52 bg-surface border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden p-1"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <button
