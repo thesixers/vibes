@@ -1,6 +1,6 @@
 {
   "name": "vibes-desktop",
-  "version": "1.0.7",
+  "version": "2.0.0",
   "type": "module",
   "description": "A beautiful cross-platform music player with liquid glass UI",
   "homepage": "https://github.com/vibes/vibes-desktop",
