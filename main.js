@@ -3,6 +3,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
 import { parseFile } from "music-metadata";
+import mime from "mime-types";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,7 +32,7 @@ function createWindow() {
   if (!app.isPackaged || process.env.NODE_ENV === "development") {
     mainWindow.loadURL("http://localhost:5173");
   } else {
-    mainWindow.loadFile(path.join(__dirname, "dist/index.html")); 
+    mainWindow.loadFile(path.join(__dirname, "dist/index.html"));
   }
 }
 
@@ -67,7 +68,7 @@ ipcMain.handle("load-music-library", async () => {
       artist:
         common.album && common.album.toLowerCase() === "trendybeatz.com"
           ? common.composer.join(" ")
-          : cleanTitle({title: common.artist}),
+          : cleanTitle({ title: common.artist }),
       title: cleanTitle(common, file),
       album: common.album,
       path: `file://${filePath}`,
@@ -86,6 +87,33 @@ ipcMain.handle("load-music-library", async () => {
   }
 
   return tracks;
+});
+
+ipcMain.handle("get-track-buffer", async (event, filePath) => {
+ try {
+  const realPath = fileURLToPath(filePath);
+  const contentType = mime.lookup(realPath) || "application/octet-stream";
+  const filename = path.basename(realPath) || null;
+
+  if (!fs.existsSync(realPath))
+    return {
+      buffer: null,
+      contentType: null,
+      fileName: null,
+    };
+
+  return {
+    buffer: fs.readFileSync(realPath),
+    contentType,
+    fileName: filename,
+  };
+ } catch (error) {
+  return {
+    buffer: null,
+    contentType: null,
+    fileName: null,
+  }
+ }
 });
 
 const junks = [
@@ -137,7 +165,7 @@ app.whenReady().then(() => {
       protocol.handle("media", (request) => {
         // Convert "media://path/to/song.mp3" -> "file:///path/to/song.mp3"
         const url = request.url.replace("media://", "");
-        
+
         // Decode URI (fixes spaces like "Feeling%20The%20Nigga")
         return net.fetch("file://" + decodeURIComponent(url));
       });
@@ -153,11 +181,11 @@ app.on("window-all-closed", () => {
 });
 
 // In your electron main file:
-app.commandLine.appendSwitch('ignore-certificate-errors');
-app.commandLine.appendSwitch('allow-insecure-localhost', 'true');
+app.commandLine.appendSwitch("ignore-certificate-errors");
+app.commandLine.appendSwitch("allow-insecure-localhost", "true");
 
 function cleanTitle(common, file) {
-  if(!common.title && !file) return "";
+  if (!common.title && !file) return "";
 
   const title = common.title
     ? common.title.replaceAll("(", "").replaceAll(")", "").split("|")[0]

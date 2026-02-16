@@ -3,6 +3,7 @@ import { X, Music, Sparkles } from "lucide-react";
 import { useSync } from "../context/SyncContext";
 import { db } from "../data/db";
 import { motion } from "framer-motion";
+import ReactDOM from "react-dom";
 
 const PlaylistForm = () => {
   const { showPlaylistForm, setShowPlaylistForm } = useSync();
@@ -33,7 +34,7 @@ const PlaylistForm = () => {
   // If hidden, return nothing (Parent AnimatePresence handles exit if wrapped, otherwise instant unmount)
   if (!showPlaylistForm) return null;
 
-  return (
+  return ReactDOM.createPortal(
     <div className="fixed inset-0 z-[120] flex justify-center items-center p-4">
       
       {/* 1. Backdrop (Blurry & Dark) */}
@@ -106,7 +107,8 @@ const PlaylistForm = () => {
           </button>
         </div>
       </motion.div>
-    </div>
+    </div>,
+    document.body,
   );
 };
 

@@ -8,7 +8,8 @@ contextBridge.exposeInMainWorld("vibesApp", {
   minimizeWindow: () => ipcRenderer.send("window-minimize"),
   maximizeWindow: () => ipcRenderer.send("window-maximize"),
   closeWindow: () => ipcRenderer.send("window-close"),
-  loadMusicLibrary: () => ipcRenderer.invoke('load-music-library')
+  loadMusicLibrary: () => ipcRenderer.invoke('load-music-library'),
+  getTrackBuffer: (filePath) => ipcRenderer.invoke('get-track-buffer', filePath),
 });
 
 // console.log("vibesApp exposed to main world");

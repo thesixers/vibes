@@ -5,7 +5,6 @@ import { db } from "../data/db";
 import { useSync } from "../context/SyncContext";
 import PlaylistForm from "./PlaylistForm";
 import { Check, Music, X, Plus, ListMusic } from "lucide-react";
-import { motion } from "framer-motion";
 
 export default function AddtoPlayList({ songToAction, setSongToAction }) {
   const { setShowPlaylistForm, showPlaylistForm } = useSync();
@@ -33,19 +32,12 @@ export default function AddtoPlayList({ songToAction, setSongToAction }) {
       {showPlaylistForm && <PlaylistForm />}
 
       {/* BACKDROP */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+      <div
         className="fixed inset-0 z-[110] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
         onClick={() => setSongToAction(null)}
       >
         {/* MODAL CARD */}
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0, y: 20 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.9, opacity: 0, y: 20 }}
-          transition={{ type: "spring", stiffness: 300, damping: 25 }}
+        <div
           className="bg-surface border border-slate-200 dark:border-white/10 w-full max-w-sm rounded-[2rem] overflow-hidden shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
@@ -136,8 +128,8 @@ export default function AddtoPlayList({ songToAction, setSongToAction }) {
               <span>New Playlist</span>
             </button>
           </div>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </>,
     document.body,
   );

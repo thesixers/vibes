@@ -1,15 +1,18 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useRef } from "react";
 import { db } from "../data/db.ts";
 import { addFullSong } from "../data/db_utils.ts";
 import stringSimilarity from "string-similarity";
 import useOnlineStatus from "../hooks/useOnlineStatus.jsx";
+import { localUrl } from "../data/utils.js";
 
 const SyncContext = createContext();
 
 export const SyncProvider = ({ children }) => {
   const [syncing, setSyncing] = useState(false);
   const [showPlaylistForm, setShowPlaylistForm] = useState(false);
+  const [backUpIdList, setBackUpIdList] = useState([]);
   const isOnline = useOnlineStatus();
+  const backUpMap = useRef(new Map());
 
   // function to sync local music library with spotify database from my server
   const handleSync = async () => {
@@ -39,7 +42,7 @@ export const SyncProvider = ({ children }) => {
         if(!query) continue;
         try {
           const res = await fetch(
-            `https://vibes-spotify.onrender.com/api/track?title=${encodeURIComponent(query)}`
+            `${localUrl}/api/tracks/metadata?title=${encodeURIComponent(query)}`
           );
   
           if (!res.ok) continue;
@@ -65,7 +68,6 @@ export const SyncProvider = ({ children }) => {
   
     setSyncing(false);
   };
-
 
   // this is the new verify match function edit it as you like to improve matching
   const newVerifyMatch = (localTrack, serverResult) => {
@@ -132,6 +134,74 @@ export const SyncProvider = ({ children }) => {
     return totalScore >= 0.75;
   }
 
+  const insertTrackToBackUp = (track) => {
+    if(!track) return;
+
+    setBackUpIdList([...backUpIdList, track.id]);
+    backUpMap.current.set(track.id, {...track, status: "pending"});
+  }
+
+  const backUpTrack = async (trackId) => {
+    const track = backUpMap.current.get(trackId);
+    if(!track || track.status !== "pending" || track.is_backed_up) return;
+
+    try {
+      const { buffer, contentType, fileName } =
+        await window.vibesApp.getTrackBuffer(track.file_path);
+
+      if(!buffer) {
+        alert("File not found for backup. It may have been moved or deleted.");
+        return;
+      }
+
+      const blob = new Blob([buffer], { type: contentType });
+      const formData = new FormData();
+      formData.append("file", blob, fileName);
+      formData.append(
+        "metadata",
+        JSON.stringify({ ...track, file_path: null, fileName })
+      );
+
+      const res = await fetch(`${localUrl}/api/tracks/upload`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if(res.ok){
+        backUpMap.current.set(track.id, {...track, status: "complete"})
+        setBackUpIdList(prev => prev.filter(id => id !== trackId));
+        await db.songs.update(trackId, { is_backed_up: true });
+      }else{
+        throw new Error(`Backup failed with status ${res.status}`);
+      }
+    } catch (err) {
+      console.warn("Backup failed for track:", track.title, err);
+      backUpMap.current.set(track.id, {...track, status: "failed"})
+      setBackUpIdList(prev => prev.filter(id => id !== trackId));
+    }
+  }
+
+  const removeTrackFromBackUp = (trackId) => {
+    backUpMap.current.delete(trackId);
+  }
+
+  const getTrackBackUpStatus = (trackId) => {
+    const track = backUpMap.current.get(trackId);
+    return track ? track.status : null;
+  }
+
+  useEffect(() => {
+    if(!backUpIdList.length || !isOnline) return;
+    const syncBackUpTracks = async () => {
+      const treshHold = 3;
+      const tracksToBackUp = backUpIdList.slice(0, treshHold);
+
+      await Promise.all(tracksToBackUp.map(id => backUpTrack(id)));
+    }
+
+    syncBackUpTracks();
+  }, [backUpIdList, isOnline]);
+
   const value = {
     syncing,
     setSyncing,
@@ -139,6 +209,10 @@ export const SyncProvider = ({ children }) => {
     setShowPlaylistForm,
     isOnline,
     handleSync,
+    insertTrackToBackUp,
+    backUpIdList,
+    getTrackBackUpStatus,
+    removeTrackFromBackUp,
   };
 
   useEffect(() => {

@@ -16,4 +16,4 @@ export function formatDuration(ms) {
 }
 
 export const localUrl = "http://127.0.0.1:3000";
-export const remoteUrl = "https://spotify-clone-backend-1.onrender.com";
+export const remoteUrl = "https://vibesapi.hkai.site";
