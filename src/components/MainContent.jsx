@@ -110,7 +110,7 @@ const MainContent = () => {
         <div className="flex items-center justify-between px-1 sm:px-2">
           <div className="flex items-center gap-2 sm:gap-3">
             <Layers size={16} className="text-primary" />
-            <h2 className="text-[9px] sm:text-xs font-black text-text-muted uppercase tracking-[0.2em] sm:tracking-[0.3em]">Curation Index</h2>
+            <h2 className="text-[9px] sm:text-xs font-black text-text-muted uppercase tracking-[0.2em] sm:tracking-[0.3em]">Playlists</h2>
           </div>
           <button 
             onClick={() => navigate('/library')}
@@ -159,7 +159,7 @@ const MainContent = () => {
       <section className="space-y-6 sm:space-y-10">
         <div className="flex items-center gap-2 sm:gap-3 px-1 sm:px-2">
           <Activity size={16} className="text-slate-400" />
-          <h2 className="text-[9px] sm:text-xs font-black text-text-muted uppercase tracking-[0.2em] sm:tracking-[0.3em]">Recent Reception</h2>
+          <h2 className="text-[9px] sm:text-xs font-black text-text-muted uppercase tracking-[0.2em] sm:tracking-[0.3em]">Recently Added</h2>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-x-6 sm:gap-y-4">

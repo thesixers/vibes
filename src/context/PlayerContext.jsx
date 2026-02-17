@@ -27,6 +27,7 @@ export const PlayerProvider = ({ children }) => {
   const [volume, setVolume] = useState(70);
   const [isShuffling, setIsShuffling] = useState(false);
   const [isRepeating, setIsRepeating] = useState(false);
+  // const shuffleMountRef = useRef(false);
 
   // -------------------------
   // Local Storage Helpers
@@ -71,7 +72,7 @@ export const PlayerProvider = ({ children }) => {
   // -------------------------
   // Core Audio Functions
   // -------------------------
-  const loadAndPlay = useCallback((track) => {
+  const loadAndPlay = (track) => {
     if (!track) return;
 
     setCurrentTrack(track);
@@ -80,9 +81,9 @@ export const PlayerProvider = ({ children }) => {
     audioRef.current.src = track.file_path;
     audioRef.current.play();
     setIsPlaying(true);
-  }, []);
+  };
 
-  const togglePlay = useCallback(() => {
+  const togglePlay = () => {
     const audio = audioRef.current;
 
     if (!audio.src) return;
@@ -94,9 +95,9 @@ export const PlayerProvider = ({ children }) => {
       audio.pause();
       setIsPlaying(false);
     }
-  }, []);
+  };
 
-  const seek = useCallback((percent) => {
+  const seek = (percent) => {
     const audio = audioRef.current;
 
     if (!audio.duration) return;
@@ -105,12 +106,12 @@ export const PlayerProvider = ({ children }) => {
     audio.currentTime = time;
     setProgress(percent);
     updatePlayerState("progress", percent);
-  }, []);
+  };
 
   // -------------------------
   // Track Navigation
   // -------------------------
-  const nextTrack = useCallback(() => {
+  const nextTrack = () => {
     if (queue.length === 0) return;
 
     const nextIndex = currentIndex + 1;
@@ -124,9 +125,9 @@ export const PlayerProvider = ({ children }) => {
     updatePlayerState("currentIndex", nextIndex);
 
     loadAndPlay(queue[nextIndex]);
-  }, [queue, currentIndex, loadAndPlay]);
+  };
 
-  const prevTrack = useCallback(() => {
+  const prevTrack = () => {
     const audio = audioRef.current;
 
     if (audio.currentTime > 3) {
@@ -146,64 +147,70 @@ export const PlayerProvider = ({ children }) => {
     updatePlayerState("currentIndex", prevIndex);
 
     loadAndPlay(queue[prevIndex]);
-  }, [queue, currentIndex, loadAndPlay]);
+  };
 
   // -------------------------
   // Playlist / Queue Actions
   // -------------------------
-  const playTrack = useCallback(
-    (track) => {
-      if (!track) return;
+  const playTrack = (track) => {
+    if (!track) return;
 
-      setQueue([track]);
-      setOriginalQueue([track]);
-      setCurrentIndex(0);
+    setQueue([track]);
+    setOriginalQueue([track]);
+    setCurrentIndex(0);
 
-      updatePlayerState("queue", [track]);
-      updatePlayerState("originalQueue", [track]);
-      updatePlayerState("currentIndex", 0);
+    updatePlayerState("queue", [track]);
+    updatePlayerState("originalQueue", [track]);
+    updatePlayerState("currentIndex", 0);
 
-      loadAndPlay(track);
-    },
-    [loadAndPlay]
-  );
+    loadAndPlay(track);
+  };
 
-  const playPlaylist = useCallback(
-    (tracks, startIndex = 0) => {
-      if (!tracks || tracks.length === 0) return;
+  const playPlaylist = (tracks, startIndex = 0) => {
+    if (!tracks || tracks.length === 0) return;
 
-      setQueue(tracks);
-      setOriginalQueue(tracks);
-      setCurrentIndex(startIndex);
+    setQueue(tracks);
+    setOriginalQueue(tracks);
+    setCurrentIndex(startIndex);
 
-      updatePlayerState("queue", tracks);
-      updatePlayerState("originalQueue", tracks);
-      updatePlayerState("currentIndex", startIndex);
+    updatePlayerState("queue", tracks);
+    updatePlayerState("originalQueue", tracks);
+    updatePlayerState("currentIndex", startIndex);
 
-      loadAndPlay(tracks[startIndex]);
-    },
-    [loadAndPlay]
-  );
+    loadAndPlay(tracks[startIndex]);
+  };
 
-  const shuffleQueue = useCallback(() => {
+  const shuffleQueue = () => {
     if (!originalQueue.length) return;
 
     const shuffled = [...originalQueue].sort(() => Math.random() - 0.5);
 
+    const currentIndex = shuffled.findIndex(track => track.id === currentTrack.id);
+    setCurrentIndex(currentIndex)
+    updatePlayerState("currentIndex", currentIndex)
+
     setQueue(shuffled);
     updatePlayerState("queue", shuffled);
-  }, [originalQueue]);
+  };
 
-  const toggleShuffle = useCallback(() => {
-    setIsShuffling((prev) => !prev);
-  }, []);
+  const toggleShuffle = () => {
+    
+    if (!isShuffling) {
+      shuffleQueue();
+    } else {
+      setQueue(originalQueue);
+      updatePlayerState("queue", originalQueue);
+    }
+    setIsShuffling(!isShuffling);
+    updatePlayerState("isShuffling", !isShuffling);
+  };
 
-  const toggleRepeat = useCallback(() => {
+  const toggleRepeat = () => {
     setIsRepeating((prev) => {
       updatePlayerState("isRepeating", !prev);
       return !prev;
     });
-  }, []);
+  };
 
   // -------------------------
   // Load Saved State (on mount)
@@ -217,11 +224,14 @@ export const PlayerProvider = ({ children }) => {
     const saved = getPlayerState();
     if (!saved) return;
 
+    console.log(saved, "**");
+
     setQueue(saved.queue || []);
     setOriginalQueue(saved.originalQueue || []);
     setCurrentIndex(saved.currentIndex ?? -1);
-    setIsRepeating(saved.isRepeating || false);
+
     setIsShuffling(saved.isShuffling || false);
+    setIsRepeating(saved.isRepeating || false);
     setProgress(saved.progress || 0);
     setVolume(saved.volume ?? 70);
 
@@ -240,20 +250,6 @@ export const PlayerProvider = ({ children }) => {
     audioRef.current.volume = volume / 100;
     updatePlayerState("volume", volume);
   }, [volume]);
-
-  // -------------------------
-  // Shuffle Effect
-  // -------------------------
-  useEffect(() => {
-    updatePlayerState("isShuffling", isShuffling);
-
-    if (isShuffling) {
-      shuffleQueue();
-    } else {
-      setQueue(originalQueue);
-      updatePlayerState("queue", originalQueue);
-    }
-  }, [isShuffling, originalQueue, shuffleQueue]);
 
   // -------------------------
   // Audio Event Listeners
@@ -286,7 +282,7 @@ export const PlayerProvider = ({ children }) => {
       audio.removeEventListener("timeupdate", updateProgress);
       audio.removeEventListener("ended", handleEnded);
     };
-  }, [isRepeating, queue, currentIndex, loadAndPlay, nextTrack]);
+  }, [isRepeating, queue, currentIndex]);
 
   // -------------------------
   // Media Session Controls
